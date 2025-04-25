@@ -351,7 +351,7 @@ def run_app():
                 1 for en in enemy_units if en in data.get(u, {}).get("countered_by", [])
             )
             penalty = -2 - (enemy_counters - 1) if enemy_counters > 0 else 0
-            return coverage * 2.5 + t_val + in_build + penalty
+            return coverage * 2.5 + t_val + in_build + penalty * 1.2
 
         candidates = set(all_units)
         best = max(candidates, key=score_unit)
