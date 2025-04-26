@@ -396,7 +396,7 @@ def run_app():
             # if chaf unit is in my build and round!=1 add to score
             if u in chaf_units and round_num != 1:
                 chaf_score = (
-                    -3
+                    -2
                 )  # we already have the tip in place so usually we don't want to upgrade it
 
             # coverage
@@ -416,7 +416,7 @@ def run_app():
                 for e in enemy_units
                 if u in data.get(e, {}).get("countered_by", []) and e in already
             ]
-            coverage_score = len(new_cov) * 2 - len(overlap) * 0.3
+            coverage_score = len(new_cov) * 1.2 - len(overlap) * 0.1
 
             struggle_priority = 0  # <-- define this safely first
 
@@ -434,22 +434,22 @@ def run_app():
             giant_pen = 0
             if is_giant:
                 if giants_in == 1:
-                    giant_pen = -2
+                    giant_pen = -1
                 elif giants_in == 2:
-                    giant_pen = -5
+                    giant_pen = -3
                 elif giants_in >= 3:
-                    giant_pen = -10
+                    giant_pen = -7
 
             if round_num <= 3:
                 # In early rounds, penalize titan units slightly
                 early_pen = -10 if is_titan else 0
-                early_pen += -6 if is_giant else 0
+                early_pen += -3 if is_giant else 0
             elif round_num < 6:
                 # Moderate penalty for rounds 4-5
                 early_pen = -10 if is_titan else 0
             elif round_num == 6:
                 # Lessen the penalty slightly at round 6
-                early_pen = -7 if is_titan else 0
+                early_pen = -6 if is_titan else 0
             else:
                 # Linearly decrease early-round penalty from -3 at round 7 to 0 at round 10 and above
                 early_pen = -(10 - round_num) if round_num < 10 else 0
@@ -488,7 +488,7 @@ def run_app():
 
             return (
                 coverage_score
-                + t_val * 0.7
+                + t_val * 0.9
                 + in_build
                 + titan_pen
                 + giant_pen
