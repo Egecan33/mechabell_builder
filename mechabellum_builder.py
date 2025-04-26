@@ -451,7 +451,7 @@ def run_app():
                 msg += f" ✅ Strong into {targets_html} – try to force that lane!"
 
             if not (enemy_threats or mutual or enemy_targets):
-                msg += "✨ No direct interactions detected – deploy flexibly."
+                msg = f"<span style='color:green'>{msg}✨ No direct interactions detected – deploy flexibly.</span>"
 
             st.markdown(msg, unsafe_allow_html=True)
 
