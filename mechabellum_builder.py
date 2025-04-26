@@ -313,28 +313,32 @@ def run_app():
             else:
                 st.write("Enemy has coverage for all unused units.")
 
-        # 🚫 Avoid for now (already countered)
-        with colC:
-            st.header("🚫 Avoid for now")
-            avoid = []
-            for cand in (u for u in all_units if u not in my_units):
-                hits = sum(
-                    1
-                    for en in enemy_units
-                    if cand in data.get(en, {}).get("countered_by", [])
+    # 🚫 Avoid for now (opponent can counter immediately)
+    with colC:
+        st.header("🚫 Avoid for now")
+
+        avoid = []
+        for candidate in all_units:
+            # enemy units that can counter this candidate
+            counters = [
+                en
+                for en in enemy_units
+                if candidate in data.get(en, {}).get("used_against", [])
+            ]
+            if counters:
+                avoid.append((candidate, len(counters)))
+
+        avoid.sort(key=lambda x: (-x[1], x[0]))
+
+        if avoid:
+            for u, n in avoid:
+                label = "hard" if n >= 2 else "soft"
+                st.markdown(
+                    f"- **{u}** {badge(u)} ({label} – {n} counters by current enemy build)",
+                    unsafe_allow_html=True,
                 )
-                if hits:
-                    avoid.append((cand, hits))
-            avoid.sort(key=lambda x: (-x[1], x[0]))
-            if avoid:
-                for u, n in avoid:
-                    lbl = "hard" if n >= 2 else "soft"
-                    st.markdown(
-                        f"- **{u}** {badge(u)} ({lbl} – {n} enemy counter{'s' if n>1 else ''})",
-                        unsafe_allow_html=True,
-                    )
-            else:
-                st.write("No strongly pre‑countered units detected.")
+        else:
+            st.write("Enemy build does not strongly counter anything directly.")
 
     # --------------------- Next focus suggestion ---------------------
     if my_units and enemy_units:
@@ -351,7 +355,7 @@ def run_app():
                 1 for en in enemy_units if en in data.get(u, {}).get("countered_by", [])
             )
             penalty = -2 - (enemy_counters - 1) if enemy_counters > 0 else 0
-            return coverage * 2.5 + t_val + in_build + penalty * 1.2
+            return coverage * 2 + t_val + in_build + penalty * 1.4
 
         candidates = set(all_units)
         best = max(candidates, key=score_unit)
