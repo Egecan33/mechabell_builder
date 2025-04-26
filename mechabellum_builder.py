@@ -481,14 +481,21 @@ def run_app():
                 )
             return lines
 
-        st.subheader(f"🎯 Primary: **{best}** {badge(best)}")
-        for ln in explain(best):
-            st.markdown(ln, unsafe_allow_html=True)
+        # Best suggestion
+        st.markdown(f"### 🎯 Primary: {best} {badge(best)}", unsafe_allow_html=True)
+        for line in explain(best):
+            st.markdown(line, unsafe_allow_html=True)
 
         st.divider()
-        st.subheader(f"🎯 Secondary: **{second}** {badge(second)}")
-        for ln in explain(second):
-            st.markdown(ln, unsafe_allow_html=True)
+        # Second-best suggestion
+        if second:
+            st.divider()
+            st.markdown(
+                f"### 🎯 Secondary: {second} {badge(second)}",
+                unsafe_allow_html=True,
+            )
+            for line in explain(second):
+                st.markdown(line, unsafe_allow_html=True)
 
         st.info(
             f"📌 You can always add more chaff: **{max(chaf_units, key=score_unit)}**"
