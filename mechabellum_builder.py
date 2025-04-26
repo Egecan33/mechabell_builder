@@ -431,37 +431,43 @@ def run_app():
                 else 0
             )
             giants_in = sum(units_meta[m].get("giant", False) for m in my_units)
+
             giant_pen = 0
-            if is_giant:
-                if giants_in == 1:
-                    giant_pen = -1
-                elif giants_in == 2:
-                    giant_pen = -3
-                elif giants_in >= 3:
-                    giant_pen = -7
-
-            if round_num <= 3:
-                # In early rounds, penalize titan units slightly
-                early_pen = -10 if is_titan else 0
-                early_pen += -3 if is_giant else 0
-            elif round_num < 6:
-                # Moderate penalty for rounds 4-5
-                early_pen = -10 if is_titan else 0
-            elif round_num == 6:
-                # Lessen the penalty slightly at round 6
-                early_pen = -6 if is_titan else 0
-            else:
-                # Linearly decrease early-round penalty from -3 at round 7 to 0 at round 10 and above
-                early_pen = -(10 - round_num)  # if round_num < 10 else 0
-
-            # cost scaling
             cost_pen = 0  # Default initialization
-            if round_num <= 3:
-                cost_pen = -(cost + unlock) / 400
-            elif round_num <= 6:
-                cost_pen = (cost + unlock) / 450
-            elif round_num > 6:
-                cost_pen = (cost + unlock) / (600 - 50 * (round_num - 6))
+            early_pen = 0
+
+            if u not in my_units:
+
+                if is_giant:
+                    if giants_in == 1:
+                        giant_pen = -1
+                    elif giants_in == 2:
+                        giant_pen = -3
+                    elif giants_in >= 3:
+                        giant_pen = -7
+
+                if round_num <= 3:
+                    # In early rounds, penalize titan units slightly
+                    early_pen = -10 if is_titan else 0
+                    early_pen += -3 if is_giant else 0
+                elif round_num < 6:
+                    # Moderate penalty for rounds 4-5
+                    early_pen = -10 if is_titan else 0
+                elif round_num == 6:
+                    # Lessen the penalty slightly at round 6
+                    early_pen = -6 if is_titan else 0
+                else:
+                    # Linearly decrease early-round penalty from -3 at round 7 to 0 at round 10 and above
+                    early_pen = -(10 - round_num)  # if round_num < 10 else 0
+
+                # cost scaling
+
+                if round_num <= 3:
+                    cost_pen = -(cost + unlock) / 400
+                elif round_num <= 6:
+                    cost_pen = (cost + unlock) / 450
+                elif round_num > 6:
+                    cost_pen = (cost + unlock) / (600 - 50 * (round_num - 6))
 
             # enemy counters
             # Combine enemy counters and enemies used against my units into a unique list
