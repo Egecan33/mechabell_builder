@@ -313,32 +313,32 @@ def run_app():
             else:
                 st.write("Enemy has coverage for all unused units.")
 
-    # 🚫 Avoid for now (opponent can counter immediately)
-    with colC:
-        st.header("🚫 Avoid for now")
+        # 🚫 Avoid for now (opponent can counter immediately)
+        with colC:
+            st.header("🚫 Avoid for now")
 
-        avoid = []
-        for candidate in all_units:
-            # enemy units that can counter this candidate
-            counters = [
-                en
-                for en in enemy_units
-                if candidate in data.get(en, {}).get("used_against", [])
-            ]
-            if counters:
-                avoid.append((candidate, len(counters)))
+            avoid = []
+            for candidate in all_units:
+                # enemy units that can counter this candidate
+                counters = [
+                    en
+                    for en in enemy_units
+                    if candidate in data.get(en, {}).get("used_against", [])
+                ]
+                if counters:
+                    avoid.append((candidate, len(counters)))
 
-        avoid.sort(key=lambda x: (-x[1], x[0]))
+            avoid.sort(key=lambda x: (-x[1], x[0]))
 
-        if avoid:
-            for u, n in avoid:
-                label = "hard" if n >= 2 else "soft"
-                st.markdown(
-                    f"- **{u}** {badge(u)} ({label} – {n} counters by current enemy build)",
-                    unsafe_allow_html=True,
-                )
-        else:
-            st.write("Enemy build does not strongly counter anything directly.")
+            if avoid:
+                for u, n in avoid:
+                    label = "hard" if n >= 2 else "soft"
+                    st.markdown(
+                        f"- **{u}** {badge(u)} ({label} – {n} counters by current enemy build)",
+                        unsafe_allow_html=True,
+                    )
+            else:
+                st.write("Enemy build does not strongly counter anything directly.")
 
     # --------------------- Next focus suggestion ---------------------
     if my_units and enemy_units:
