@@ -416,7 +416,7 @@ def run_app():
                 for e in enemy_units
                 if u in data.get(e, {}).get("countered_by", []) and e in already
             ]
-            coverage_score = len(new_cov) * 1.2 - len(overlap) * 0.1
+            coverage_score = len(new_cov) * 2 + len(overlap)
 
             struggle_priority = 0  # <-- define this safely first
 
