@@ -383,6 +383,8 @@ def run_app():
             # if build doesn't have arclight and round==1 add to score
             if "Arclight" not in my_units and round_num == 1:
                 arc_score = 7
+                if any(chaf in enemy_units for chaf in chaf_units):
+                    arc_score = 11
 
             # coverage
             already = {
