@@ -294,10 +294,10 @@ def run_app():
                 else:
                     st.success("No listed hard counters – nice!")
 
+    colA, colB, colC = st.columns(3)
     # ---------- Focus panels ----------
     if my_units and enemy_units:
         st.divider()
-        colA, colB, colC = st.columns(3)
 
         def enemy_has_counter(u: str) -> bool:
             return any(
@@ -323,8 +323,8 @@ def run_app():
             if free:
                 for u in free:
                     st.markdown(f"- **{u}** {badge(u)}", unsafe_allow_html=True)
-    else:
-        st.write("Enemy has coverage for all unused units.")
+            else:
+                st.write("Enemy has coverage for all unused units.")
 
         with colC:
             st.header("🚫 Avoid for now")
