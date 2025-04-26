@@ -264,7 +264,7 @@ def run_app():
         enemy_units = st.multiselect("Enemy units", all_units)
     with col3:
         struggle_units = st.multiselect(
-            "Struggle units", all_units, help="Units you struggle against."
+            "Struggle units", enemy_units, help="Units you struggle against."
         )
 
     st.divider()
