@@ -377,25 +377,16 @@ def run_app():
                 for m in my_units
                 for e in enemy_units
                 if m in data.get(e, {}).get("countered_by", [])
-                or e in data.get(m, {}).get("used_against", [])
             }
             new_cov = [
                 e
                 for e in enemy_units
-                if (
-                    u in data.get(e, {}).get("countered_by", [])
-                    or e in data.get(u, {}).get("used_against", [])
-                )
-                and e not in already
+                if u in data.get(e, {}).get("countered_by", []) and e not in already
             ]
             overlap = [
                 e
                 for e in enemy_units
-                if (
-                    u in data.get(e, {}).get("countered_by", [])
-                    or e in data.get(u, {}).get("used_against", [])
-                )
-                and e in already
+                if u in data.get(e, {}).get("countered_by", []) and e in already
             ]
             coverage_score = len(new_cov) * 2 - len(overlap) * 0.3
 
