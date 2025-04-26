@@ -526,6 +526,7 @@ def run_app():
                 lines.append("• 🚀 Titan-class (limit 1)")
             if meta.get("giant"):
                 lines.append("• 🛡️ Giant")
+
             # coverage
             already = {
                 e
@@ -549,9 +550,25 @@ def run_app():
                 )
             if ov_cov:
                 lines.append(f"• Overlap coverage: {len(ov_cov)} → {', '.join(ov_cov)}")
+
+            # 📌 Struggle counter explanation
+            if struggle_units:
+                struggle_hits = [
+                    s
+                    for s in struggle_units
+                    if u in data.get(s, {}).get("countered_by", [])
+                ]
+                if struggle_hits:
+                    lines.append(
+                        f"• 🆘 Helps against {len(struggle_hits)} struggle unit(s): {', '.join(struggle_hits)}"
+                    )
+
+            # tier tag
             t_tag = tiers.get(u)
             if t_tag:
                 lines.append(f"• Tier rank: **{t_tag}**")
+
+            # enemy counters
             enemy_cnt = [
                 en
                 for en in enemy_units
@@ -561,6 +578,7 @@ def run_app():
                 lines.append(
                     f"• ⚠️ {len(enemy_cnt)} enemy counter(s): {', '.join(enemy_cnt)}"
                 )
+
             return lines
 
         # Best suggestion
