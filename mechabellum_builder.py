@@ -371,7 +371,7 @@ def run_app():
         "Optimize your formation by analyzing the vulnerability of your units and their potential to counter enemy moves. The suggestions below help you reposition units to minimize exposure to enemy counters and to create effective counter zones."
     )
 
-    if my_units and enemy_units:
+    if my_units:
         st.subheader("Dynamic Positioning & Tactical Engagement")
         for u in my_units:
             enemy_threats = [
@@ -398,15 +398,16 @@ def run_app():
             if enemy_targets:
                 message += f" It effectively counters **{', '.join(enemy_targets)}**—match it up to press the attack!"
             st.markdown(message, unsafe_allow_html=True)
-        st.markdown(
-            "💡 Tip: Arrange your formation so vulnerable units tuck behind sturdier allies, "
-            "while units that counter enemy forces are oriented to face their targets head-on. "
-            "Mix up the alignment dynamically to outflank and outmaneuver your opponent.",
-            unsafe_allow_html=True,
-        )
+        if enemy_units:
+            st.markdown(
+                "💡 Tip: Arrange your formation so vulnerable units tuck behind sturdier allies, "
+                "while units that counter enemy forces are oriented to face their targets head-on. "
+                "Mix up the alignment dynamically to outflank and outmaneuver your opponent.",
+                unsafe_allow_html=True,
+            )
     else:
         st.write(
-            "🤔 Please select units for both your build and the enemy's build to get tailored positioning suggestions."
+            "🤔 No units in play. Please select units to get positioning suggestions."
         )
     st.divider()
 
