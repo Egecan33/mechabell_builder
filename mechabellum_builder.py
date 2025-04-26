@@ -364,10 +364,47 @@ def run_app():
             else:
                 st.write("Enemy build does not strongly counter anything directly.")
 
+    # Positioning guide
+    st.divider()
+    st.header("📌 Dynamic Positioning Strategy")
+    st.markdown(
+        "Optimize your formation by analyzing the vulnerability of your units and their potential to counter enemy moves. The suggestions below help you reposition units to minimize exposure to enemy counters and to create effective counter zones."
+    )
+
+    if my_units and enemy_units:
+        st.subheader("Vulnerability Analysis & Tactical Placement")
+        for u in my_units:
+            enemy_counters = [
+                en
+                for en in enemy_units
+                if u in data.get(en, {}).get("countered_by", [])
+            ]
+            if enemy_counters:
+                st.markdown(
+                    f"- **{u}** {badge(u)} is countered by **{', '.join(enemy_counters)}**. "
+                    "Consider moving this unit to a more sheltered position or near allies that can provide cover. "
+                    "This repositioning can reduce the impact of enemy attacks and increase your overall defensive resilience.",
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.markdown(
+                    f"- **{u}** {badge(u)} is not directly countered by any enemy unit. "
+                    "Keeping it in a central position can maximize its potential to engage and counteract enemy maneuvers.",
+                    unsafe_allow_html=True,
+                )
+        st.markdown(
+            "💡 Tip: Arrange your formation so that vulnerable units are tucked away behind sturdier allies, while those that effectively counter enemy units are placed to engage opponents head-on. Experiment with flanking tactics and varied alignments to outmaneuver your enemy."
+        )
+    else:
+        st.write(
+            "🤔 Please select units for both your build and enemy's build to receive positioning suggestions."
+        )
+    st.divider()
+
     # ---------- Next focus suggestion ----------
     if my_units and enemy_units:
-        st.divider()
         st.header("🔮 Next focus suggestion")
+        st.divider()
 
         # ---- scoring ----
         def score_unit(u: str) -> float:
@@ -600,6 +637,7 @@ def run_app():
 
             return lines
 
+        st.divider()
         # Best suggestion
         st.markdown(f"### 🎯 Primary: {best} {badge(best)}", unsafe_allow_html=True)
         for line in explain(best):
@@ -619,6 +657,7 @@ def run_app():
         st.info(
             f"📌 You can always add more chaff: **{max(chaf_units, key=score_unit)}**. "
         )
+
         if round_num < 4:
             st.info(
                 f"Don't buy tech before round 4. "
