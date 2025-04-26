@@ -345,17 +345,47 @@ def run_app():
         st.divider()
         st.header("🔮 Next focus suggestion")
 
-        def score_unit(u: str) -> int:
-            coverage = sum(
-                1 for e in enemy_units if u in data.get(e, {}).get("countered_by", [])
-            )
+        def score_unit(u: str) -> float:
+            already_covered = set()
+            for myu in my_units:
+                already_covered.update(
+                    e
+                    for e in enemy_units
+                    if myu in data.get(e, {}).get("countered_by", [])
+                )
+
+            # What this new unit would newly cover
+            newly_covers = [
+                e
+                for e in enemy_units
+                if u in data.get(e, {}).get("countered_by", [])
+                and e not in already_covered
+            ]
+            overlaps = [
+                e
+                for e in enemy_units
+                if u in data.get(e, {}).get("countered_by", []) and e in already_covered
+            ]
+
+            unique_coverage = len(set(newly_covers))
+            overlap_coverage = len(set(overlaps))
+
             t_val = TIER_RANK.get(tiers.get(u, ""), 0)
             in_build = 1 if u in my_units else 0
+
+            # You want:
+            # - Big reward for unique new coverages
+            # - Small reward for overlap coverage (maybe 0.5 per)
+            # - Strong scaling for multi-unique coverages
+            coverage_score = unique_coverage * 2.5 + overlap_coverage * 0.7
+
+            # Penalty if enemy already counters this unit
             enemy_counters = sum(
                 1 for en in enemy_units if en in data.get(u, {}).get("countered_by", [])
             )
             penalty = -2 - (enemy_counters - 1) if enemy_counters > 0 else 0
-            return coverage * 2 + t_val + in_build + penalty * 1.4
+
+            return coverage_score + t_val + in_build + penalty * 1.5
 
         candidates = set(all_units)
         best = max(candidates, key=score_unit)
