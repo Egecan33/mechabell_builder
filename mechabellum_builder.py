@@ -371,10 +371,18 @@ def run_app():
             cost = meta.get("cost", 300)
             unlock = meta.get("unlock_cost", 0)
 
+            # subject to change
+
             chaf_score = 0
+            arc_score = 0
             # if name u is chaff unit and round==1 add to score 50
             if u in chaf_units and round_num == 1:
-                chaf_score = 50
+                if enemy_has_counter(u):
+                    chaf_score = 3
+                chaf_score = 4
+            # if build doesn't have arclight and round==1 add to score 50
+            if "Arclight" not in my_units and round_num == 1:
+                arc_score = 4
 
             # coverage
             already = {
@@ -461,6 +469,7 @@ def run_app():
                 + cost_pen
                 + vuln_pen
                 + chaf_score
+                + arc_score
             )
 
         # chaf advice round 1
