@@ -470,7 +470,6 @@ def run_app():
     # ---------- Next focus suggestion ----------
     if my_units and enemy_units:
         st.header("🔮 Next focus suggestion")
-        st.divider()
 
         # ---- scoring ----
         def score_unit(u: str) -> float:
