@@ -371,6 +371,11 @@ def run_app():
             cost = meta.get("cost", 300)
             unlock = meta.get("unlock_cost", 0)
 
+            chaf_score = 0
+            # if name u is chaff unit and round==1 add to score 50
+            if u in chaf_units and round_num == 1:
+                chaf_score = 50
+
             # coverage
             already = {
                 e
@@ -455,6 +460,7 @@ def run_app():
                 + early_pen
                 + cost_pen
                 + vuln_pen
+                + chaf_score
             )
 
         # chaf advice round 1
