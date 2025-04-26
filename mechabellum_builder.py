@@ -388,39 +388,86 @@ def run_app():
             return coverage_score + t_val * 0.6 + in_build * 0.7 + penalty * 2
 
         candidates = set(all_units)
-        best = max(candidates, key=score_unit)
-        best_score = score_unit(best)
+        sorted_candidates = sorted(candidates, key=score_unit, reverse=True)
 
-        reason_lines = []
-        if best in my_units:
-            reason_lines.append(
-                f"Upgrading **{best}** makes sense because it already sits in your build"
-            )
-        else:
-            reason_lines.append(f"Adding **{best}** to your build is attractive")
+        best = sorted_candidates[0]
+        second_best = sorted_candidates[1] if len(sorted_candidates) > 1 else None
 
-        cov = [
-            e for e in enemy_units if best in data.get(e, {}).get("countered_by", [])
-        ]
-        if cov:
-            reason_lines.append(
-                f"• It directly counters {len(cov)} enemy unit(s): {', '.join(cov)}."
-            )
-        tier_tag = tiers.get(best)
-        if tier_tag:
-            reason_lines.append(
-                f"• It is rated **{tier_tag} tier**, giving it high intrinsic value."
-            )
-        if best not in my_units and len(my_units) >= 6:
-            reason_lines.append(
-                "• Keeps your unit diversity manageable while improving coverage."
-            )
-        if any(en in data.get(best, {}).get("countered_by", []) for en in enemy_units):
-            reason_lines.append(
-                "• Note: enemy already holds a soft/hard counter, partly reducing impact."
-            )
+        def explain_choice(unit: str) -> List[str]:
+            lines = []
+            if unit in my_units:
+                lines.append(
+                    f"Upgrading **{unit}** is logical as it's already part of your build."
+                )
+            else:
+                lines.append(f"Adding **{unit}** to your build is attractive.")
 
-        st.markdown("".join(reason_lines), unsafe_allow_html=True)
+            already_covered = set()
+            for myu in my_units:
+                already_covered.update(
+                    e
+                    for e in enemy_units
+                    if myu in data.get(e, {}).get("countered_by", [])
+                )
+
+            newly_covers = [
+                e
+                for e in enemy_units
+                if unit in data.get(e, {}).get("countered_by", [])
+                and e not in already_covered
+            ]
+            overlaps = [
+                e
+                for e in enemy_units
+                if unit in data.get(e, {}).get("countered_by", [])
+                and e in already_covered
+            ]
+
+            if newly_covers:
+                lines.append(
+                    f"• **New coverage**: {len(newly_covers)} units ({', '.join(newly_covers)})."
+                )
+            if overlaps:
+                lines.append(
+                    f"• **Overlap coverage**: {len(overlaps)} units ({', '.join(overlaps)})."
+                )
+
+            tier_tag = tiers.get(unit)
+            if tier_tag:
+                lines.append(
+                    f"• It is ranked **{tier_tag} tier**, giving high intrinsic value."
+                )
+
+            if unit not in my_units and len(my_units) >= 6:
+                lines.append(
+                    "• Keeps your army size reasonable without over-diversifying."
+                )
+
+            enemy_counters = [
+                en
+                for en in enemy_units
+                if en in data.get(unit, {}).get("countered_by", [])
+            ]
+            if enemy_counters:
+                lines.append(
+                    f"• ⚠️ However, the enemy already holds {len(enemy_counters)} counter unit(s): {', '.join(enemy_counters)}."
+                )
+
+            return lines
+
+        st.header("🔮 Next Focus Suggestion")
+
+        # Best suggestion
+        st.subheader(f"🎯 Primary Focus: **{best}**")
+        for line in explain_choice(best):
+            st.markdown(line, unsafe_allow_html=True)
+
+        # Second-best suggestion
+        if second_best:
+            st.divider()
+            st.subheader(f"🎯 Secondary Focus: **{second_best}**")
+            for line in explain_choice(second_best):
+                st.markdown(line, unsafe_allow_html=True)
 
     # Detail expanders
     st.divider()
