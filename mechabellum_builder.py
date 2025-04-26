@@ -378,11 +378,11 @@ def run_app():
             # if name u is chaff unit and round==1 add to score
             if u in chaf_units and round_num == 1:
                 if enemy_has_counter(u):
-                    chaf_score = 4
-                chaf_score = 5
+                    chaf_score = 7
+                chaf_score = 10
             # if build doesn't have arclight and round==1 add to score
             if "Arclight" not in my_units and round_num == 1:
-                arc_score = 4
+                arc_score = 7
 
             # coverage
             already = {
