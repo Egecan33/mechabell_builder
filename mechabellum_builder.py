@@ -363,52 +363,82 @@ def run_app():
                     )
             else:
                 st.write("Enemy build does not strongly counter anything directly.")
-
-    # Positioning guide
+    # ---------- Positioning guide ----------
     st.divider()
     st.header("📌 Dynamic Positioning Strategy")
     st.markdown(
-        "Optimize your formation by analyzing the vulnerability of your units and their potential to counter enemy moves. The suggestions below help you reposition units to minimize exposure to enemy counters and to create effective counter zones."
+        "Optimize your formation by analysing which of your units are threatened, "
+        "which ones threaten the enemy, and which match-ups are mutually dangerous. "
+        "Use the advice below to tuck vulnerable pieces behind sturdier screens and "
+        "force favourable lanes."
     )
 
     if my_units:
         st.subheader("Dynamic Positioning & Tactical Engagement")
+
         for u in my_units:
+            # ------------- classify interactions per unit -------------
+            mutual = [
+                en  # both sides hurt each other
+                for en in enemy_units
+                if (
+                    en in data[u].get("used_against", [])  # I beat enemy
+                    and u in data[en].get("used_against", [])  # enemy beats me
+                )
+            ]
+
             enemy_threats = [
-                en
+                en  # enemy hurts me, I do NOT hurt them
                 for en in enemy_units
-                if u in data.get(en, {}).get("countered_by", [])
+                if (
+                    u in data[en].get("used_against", [])  # enemy beats me
+                    or en
+                    in data[u].get(
+                        "countered_by", []
+                    )  # OR my page says they counter me
+                )
+                and en not in mutual
             ]
+
             enemy_targets = [
-                en
+                en  # I hurt enemy, they do NOT hurt me
                 for en in enemy_units
-                if en in data.get(u, {}).get("used_against", [])
+                if (
+                    en in data[u].get("used_against", [])  # I beat enemy
+                    or u
+                    in data[en].get(
+                        "countered_by", []
+                    )  # OR enemy page says I beat them
+                )
+                and en not in mutual
             ]
-            message = f"- **{u}** {badge(u)}: "
+
+            # ------------- craft message -------------
+            msg = f"- **{u}** {badge(u)}: "
             if enemy_threats:
-                message += (
-                    f"⚠️ Facing counters from **{', '.join(enemy_threats)}**. "
-                    "Reposition this unit to dodge incoming threats and gain cover."
+                msg += (
+                    f"⚠️ Facing hard counters from **{', '.join(enemy_threats)}**. "
+                    "Re-position to minimise exposure."
                 )
-            else:
-                message += (
-                    "✨ No direct enemy counters detected. "
-                    "Keep it forward to maximize engagement."
-                )
+            if mutual:
+                msg += f" ⚖️ Skill match-ups with **{', '.join(mutual)}** – keep distance, use cover."
             if enemy_targets:
-                message += f" It effectively counters **{', '.join(enemy_targets)}**—match it up to press the attack!"
-            st.markdown(message, unsafe_allow_html=True)
+                msg += f" ✅ Strong into **{', '.join(enemy_targets)}** – try to force that lane!"
+            if not (enemy_threats or mutual or enemy_targets):
+                msg += "✨ No direct interactions detected – deploy flexibly."
+
+            st.markdown(msg, unsafe_allow_html=True)
+
+        # general tip
         if enemy_units:
             st.markdown(
-                "💡 Tip: Arrange your formation so vulnerable units tuck behind sturdier allies, "
-                "while units that counter enemy forces are oriented to face their targets head-on. "
-                "Mix up the alignment dynamically to outflank and outmaneuver your opponent.",
+                "💡 Tuck fragile units behind tanks, rotate lanes each round, "
+                "and bait enemy counters into dead space before committing.",
                 unsafe_allow_html=True,
             )
     else:
-        st.write(
-            "🤔 No units in play. Please select units to get positioning suggestions."
-        )
+        st.write("🤔 No units selected yet – add some to receive positioning tips.")
+
     st.divider()
 
     # ---------- Next focus suggestion ----------
