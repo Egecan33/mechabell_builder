@@ -418,6 +418,8 @@ def run_app():
             ]
             coverage_score = len(new_cov) * 2 - len(overlap) * 0.3
 
+            struggle_priority = 0  # <-- define this safely first
+
             # tier / in-build
             t_val = TIER_RANK.get(tiers.get(u, ""), 0)
             in_build = 1 if u in my_units else 0
