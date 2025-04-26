@@ -505,7 +505,7 @@ def run_app():
                 )  # +10 per struggle unit covered
 
             return (
-                coverage_score
+                coverage_score * 3
                 + t_val * 0.9
                 + in_build
                 + titan_pen
