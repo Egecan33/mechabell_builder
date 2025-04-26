@@ -363,6 +363,7 @@ def run_app():
                     )
             else:
                 st.write("Enemy build does not strongly counter anything directly.")
+
     # ---------- Positioning guide ----------
     st.divider()
     st.header("📌 Dynamic Positioning Strategy")
@@ -376,61 +377,73 @@ def run_app():
     if my_units:
         st.subheader("Dynamic Positioning & Tactical Engagement")
 
+        # helper to render a 16px icon after a unit name
+        def with_icon(name: str) -> str:
+            url = data.get(name, {}).get("image", "")
+            if not url:
+                return f"**{name}**"
+            return (
+                f"**{name}**"
+                f"<img src='{url}' width='16' style='vertical-align:middle;margin-left:4px'/>"
+            )
+
         for u in my_units:
-            # ------------- classify interactions per unit -------------
+            # classify
             mutual = [
-                en  # both sides hurt each other
+                en
                 for en in enemy_units
                 if (
-                    en in data[u].get("used_against", [])  # I beat enemy
-                    and u in data[en].get("used_against", [])  # enemy beats me
+                    en in data[u].get("used_against", [])
+                    and u in data[en].get("used_against", [])
                 )
             ]
 
             enemy_threats = [
-                en  # enemy hurts me, I do NOT hurt them
+                en
                 for en in enemy_units
                 if (
-                    u in data[en].get("used_against", [])  # enemy beats me
-                    or en
-                    in data[u].get(
-                        "countered_by", []
-                    )  # OR my page says they counter me
+                    u in data[en].get("used_against", [])
+                    or en in data[u].get("countered_by", [])
                 )
                 and en not in mutual
             ]
 
             enemy_targets = [
-                en  # I hurt enemy, they do NOT hurt me
+                en
                 for en in enemy_units
                 if (
-                    en in data[u].get("used_against", [])  # I beat enemy
-                    or u
-                    in data[en].get(
-                        "countered_by", []
-                    )  # OR enemy page says I beat them
+                    en in data[u].get("used_against", [])
+                    or u in data[en].get("countered_by", [])
                 )
                 and en not in mutual
             ]
 
-            # ------------- craft message -------------
-            msg = f"- **{u}** {badge(u)}: "
+            # build HTML message
+            msg = f"- {with_icon(u)}: "
+
             if enemy_threats:
-                count = len(enemy_threats)
-                if count >= 3:
-                    counter_type = "hard counters"
-                elif count == 2:
-                    counter_type = "medium counters"
-                else:
-                    counter_type = "soft counters"
+                cnt = len(enemy_threats)
+                kind = (
+                    "hard counters"
+                    if cnt >= 3
+                    else "medium counters" if cnt == 2 else "soft counters"
+                )
+                threats_html = ", ".join(with_icon(en) for en in enemy_threats)
                 msg += (
-                    f"⚠️ Facing {counter_type} from **{', '.join(enemy_threats)}**. "
+                    f"⚠️ Facing {kind} from {threats_html}. "
                     "Re-position to minimise exposure."
                 )
+
             if mutual:
-                msg += f" ⚖️ Skill match-ups with **{', '.join(mutual)}** – keep distance, use cover."
+                mutual_html = ", ".join(with_icon(en) for en in mutual)
+                msg += (
+                    f" ⚖️ Skill match-ups with {mutual_html} – keep distance, use cover."
+                )
+
             if enemy_targets:
-                msg += f" ✅ Strong into **{', '.join(enemy_targets)}** – try to force that lane!"
+                targets_html = ", ".join(with_icon(en) for en in enemy_targets)
+                msg += f" ✅ Strong into {targets_html} – try to force that lane!"
+
             if not (enemy_threats or mutual or enemy_targets):
                 msg += "✨ No direct interactions detected – deploy flexibly."
 
