@@ -432,11 +432,23 @@ def run_app():
             )
             giants_in = sum(units_meta[m].get("giant", False) for m in my_units)
 
+            normal_in = sum(
+                units_meta[m].get("giant", False) == False for m in my_units
+            )
+
             giant_pen = 0
             cost_pen = 0  # Default initialization
             early_pen = 0
+            normal_pen = 0
 
-            if u not in my_units:
+            if u not in my_units:  # (meaning new addition)
+
+                if normal_in == 0:
+                    # If no normal units in build, penalize titan units
+                    titan_pen = -999 if is_titan else 0
+                    giant_pen = -999 if is_giant else 0
+                elif normal_in < 4:
+                    normal_pen = -6
 
                 if is_giant:
                     if giants_in == 1:
@@ -503,6 +515,7 @@ def run_app():
                 + vuln_pen
                 + chaf_score
                 + arc_score
+                + normal_pen
                 + struggle_priority
             )
 
