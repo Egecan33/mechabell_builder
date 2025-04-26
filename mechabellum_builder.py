@@ -380,7 +380,7 @@ def run_app():
                 for e in enemy_units
                 if u in data.get(e, {}).get("countered_by", []) and e in already
             ]
-            coverage_score = len(new_cov) * 2.5 - len(overlap) * 0.5
+            coverage_score = len(new_cov) * 2 - len(overlap) * 0.3
 
             # tier / in-build
             t_val = TIER_RANK.get(tiers.get(u, ""), 0)
