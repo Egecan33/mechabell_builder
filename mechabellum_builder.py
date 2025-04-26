@@ -456,12 +456,15 @@ def run_app():
             st.markdown(msg, unsafe_allow_html=True)
 
         # general tip
-        if enemy_units:
-            st.markdown(
-                "💡 Tuck fragile units behind tanks, rotate lanes each round, "
-                "and bait enemy counters into dead space before committing.",
-                unsafe_allow_html=True,
-            )
+        if my_units:
+            my_chaf = [u for u in my_units if u in chaf_units]
+            if my_chaf:
+                st.markdown(
+                    "💡 Tip: Use chaff units ("
+                    + ", ".join(my_chaf)
+                    + ") to cover your larger units even if they are countered. Their versatility can help mitigate vulnerabilities.",
+                    unsafe_allow_html=True,
+                )
     else:
         st.write("🤔 No units selected yet – add some to receive positioning tips.")
 
