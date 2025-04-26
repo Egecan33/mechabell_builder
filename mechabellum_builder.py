@@ -422,7 +422,7 @@ def run_app():
 
             # tier / in-build
             t_val = TIER_RANK.get(tiers.get(u, ""), 0)
-            in_build = 1 if u in my_units else 0
+            in_build = 2.5 if u in my_units else 0
 
             # titan / giant rules
             titan_pen = (
