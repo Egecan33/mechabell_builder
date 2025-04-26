@@ -257,11 +257,15 @@ def run_app():
 
     # ---------- Pickers ----------
     all_units = sorted(data.keys())
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
         my_units = st.multiselect("My build", all_units)
     with col2:
         enemy_units = st.multiselect("Enemy units", all_units)
+    with col3:
+        struggle_units = st.multiselect(
+            "Struggle units", all_units, help="Units you struggle against."
+        )
 
     st.divider()
 
@@ -467,6 +471,11 @@ def run_app():
 
             # combine penalties
             vuln_pen = -8 * interaction_count
+            # if u counters struggle_units +5
+            if any(
+                u in data.get(s, {}).get("used_against", []) for s in struggle_units
+            ):
+                struggle_priority = 10
 
             return (
                 coverage_score
@@ -479,6 +488,7 @@ def run_app():
                 + vuln_pen
                 + chaf_score
                 + arc_score
+                + struggle_priority
             )
 
         # chaf advice round 1
