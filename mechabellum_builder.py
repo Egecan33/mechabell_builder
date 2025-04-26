@@ -401,7 +401,20 @@ def run_app():
                     giant_pen = -5
                 elif giants_in >= 3:
                     giant_pen = -10
-            early_pen = -5 if round_num <= 3 and (is_giant or is_titan) else 0
+
+            if round_num <= 3:
+                # In early rounds, penalize titan units slightly
+                early_pen = -10 if is_titan else 0
+                early_pen += -6 if is_giant else 0
+            elif round_num < 6:
+                # Moderate penalty for rounds 4-5
+                early_pen = -10 if is_titan else 0
+            elif round_num == 6:
+                # Lessen the penalty slightly at round 6
+                early_pen = -7 if is_titan else 0
+            else:
+                # Linearly decrease early-round penalty from -3 at round 7 to 0 at round 10 and above
+                early_pen = -(10 - round_num) if round_num < 10 else 0
 
             # cost scaling
             if round_num <= 3:
