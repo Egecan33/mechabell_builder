@@ -434,8 +434,17 @@ def run_app():
                 cost_pen = (cost + unlock) / (600 - 50 * (round_num - 6))
 
             # enemy counters
-            enemy_cnt = len(find_vuln([u], data, tiers))
-            vuln_pen = -8 * enemy_cnt
+            # Combine enemy counters and enemies used against my units into a unique list
+            enemy_interactions = {
+                en
+                for en in enemy_units
+                if en in data.get(u, {}).get("countered_by", [])
+                or u in data.get(en, {}).get("used_against", [])
+            }
+            interaction_count = len(enemy_interactions)
+
+            # combine penalties
+            vuln_pen = -8 * interaction_count
 
             return (
                 coverage_score
