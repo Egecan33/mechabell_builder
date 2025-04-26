@@ -394,68 +394,65 @@ def run_app():
         second_best = sorted_candidates[1] if len(sorted_candidates) > 1 else None
 
         def explain_choice(unit: str) -> List[str]:
-            lines = []
-            if unit in my_units:
-                lines.append(
-                    f"Upgrading **{unit}** is logical as it's already part of your build."
-                )
-            else:
-                lines.append(f"Adding **{unit}** to your build is attractive.")
+            """Return detailed markdown explanation for a suggested *unit*."""
+            # Enemy units already covered by your current build
+            already = {
+                e
+                for myu in my_units
+                for e in enemy_units
+                if myu in data.get(e, {}).get("countered_by", [])
+            }
 
-            already_covered = set()
-            for myu in my_units:
-                already_covered.update(
-                    e
-                    for e in enemy_units
-                    if myu in data.get(e, {}).get("countered_by", [])
-                )
-
-            newly_covers = [
+            unique_cov = [
                 e
                 for e in enemy_units
-                if unit in data.get(e, {}).get("countered_by", [])
-                and e not in already_covered
+                if unit in data.get(e, {}).get("countered_by", []) and e not in already
             ]
-            overlaps = [
+            overlap_cov = [
                 e
                 for e in enemy_units
-                if unit in data.get(e, {}).get("countered_by", [])
-                and e in already_covered
+                if unit in data.get(e, {}).get("countered_by", []) and e in already
             ]
 
-            if newly_covers:
-                lines.append(
-                    f"• **New coverage**: {len(newly_covers)} units ({', '.join(newly_covers)})."
-                )
-            if overlaps:
-                lines.append(
-                    f"• **Overlap coverage**: {len(overlaps)} units ({', '.join(overlaps)})."
-                )
-
-            tier_tag = tiers.get(unit)
-            if tier_tag:
-                lines.append(
-                    f"• It is ranked **{tier_tag} tier**, giving high intrinsic value."
-                )
-
-            if unit not in my_units and len(my_units) >= 6:
-                lines.append(
-                    "• Keeps your army size reasonable without over-diversifying."
-                )
-
+            tier_tag = tiers.get(unit, "—")
             enemy_counters = [
                 en
                 for en in enemy_units
                 if en in data.get(unit, {}).get("countered_by", [])
             ]
+            score_val = score_unit(unit)
+
+            lines: List[str] = []
+            # Intro sentence
+            lines.append(
+                f"Upgrading **{unit}** (already in build)"
+                if unit in my_units
+                else f"Adding **{unit}** to your build"
+            )
+            # Score
+            lines.append(f"• Composite score: `{score_val:.2f}`")
+            # Coverage details
+            if unique_cov:
+                lines.append(
+                    f"• **New unique coverage**: {len(unique_cov)} → {', '.join(unique_cov)}"
+                )
+            if overlap_cov:
+                lines.append(
+                    f"• **Overlap coverage**: {len(overlap_cov)} → {', '.join(overlap_cov)}"
+                )
+            # Tier
+            lines.append(f"• Tier rank: **{tier_tag}**")
+            # Enemy counters
             if enemy_counters:
                 lines.append(
-                    f"• ⚠️ However, the enemy already holds {len(enemy_counters)} counter unit(s): {', '.join(enemy_counters)}."
+                    f"• ⚠️ Enemy already has {len(enemy_counters)} counter(s): {', '.join(enemy_counters)}"
                 )
-
+            else:
+                lines.append("• Enemy currently lacks a direct counter.")
+            # Diversity note
+            if unit not in my_units and len(my_units) >= 6:
+                lines.append("• Keeps army size compact – avoids over-diversifying.")
             return lines
-
-        st.header("🔮 Next Focus Suggestion")
 
         # Best suggestion
         st.subheader(f"🎯 Primary Focus: **{best}**")
@@ -468,6 +465,14 @@ def run_app():
             st.subheader(f"🎯 Secondary Focus: **{second_best}**")
             for line in explain_choice(second_best):
                 st.markdown(line, unsafe_allow_html=True)
+
+    import pandas as pd
+
+    chart_df = pd.DataFrame(
+        [(u, score_unit(u)) for u in sorted_candidates[:10]],
+        columns=["unit", "score"],
+    ).set_index("unit")
+    st.bar_chart(chart_df)
 
     # Detail expanders
     st.divider()
