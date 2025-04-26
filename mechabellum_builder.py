@@ -377,7 +377,7 @@ def run_app():
             # - Big reward for unique new coverages
             # - Small reward for overlap coverage (maybe 0.5 per)
             # - Strong scaling for multi-unique coverages
-            coverage_score = unique_coverage * 2.2 - overlap_coverage * 1.5
+            coverage_score = unique_coverage * 2.2 - overlap_coverage
 
             # Penalty if enemy already counters this unit
             enemy_counters = sum(
