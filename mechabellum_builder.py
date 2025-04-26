@@ -414,7 +414,7 @@ def run_app():
             enemy_cnt = sum(
                 1 for en in enemy_units if en in data.get(u, {}).get("countered_by", [])
             )
-            vuln_pen = -3 * enemy_cnt
+            vuln_pen = -5.5 * enemy_cnt
 
             return (
                 coverage_score
