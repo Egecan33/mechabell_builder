@@ -385,7 +385,12 @@ def run_app():
             )
             penalty = -2 - (enemy_counters - 1) if enemy_counters > 0 else 0
 
-            return coverage_score + t_val * 0.6 + in_build * 0.7 + penalty * 2
+            return (
+                max(0, coverage_score)
+                + t_val * 0.6
+                + in_build * 0.7
+                + min(0, penalty * 3.5)
+            )
 
         candidates = set(all_units)
         sorted_candidates = sorted(candidates, key=score_unit, reverse=True)
