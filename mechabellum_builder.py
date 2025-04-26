@@ -416,8 +416,15 @@ def run_app():
             # ------------- craft message -------------
             msg = f"- **{u}** {badge(u)}: "
             if enemy_threats:
+                count = len(enemy_threats)
+                if count >= 3:
+                    counter_type = "hard counters"
+                elif count == 2:
+                    counter_type = "medium counters"
+                else:
+                    counter_type = "soft counters"
                 msg += (
-                    f"⚠️ Facing hard counters from **{', '.join(enemy_threats)}**. "
+                    f"⚠️ Facing {counter_type} from **{', '.join(enemy_threats)}**. "
                     "Re-position to minimise exposure."
                 )
             if mutual:
