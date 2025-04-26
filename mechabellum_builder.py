@@ -303,7 +303,15 @@ def run_app():
 
         def enemy_has_counter(u: str) -> bool:
             return any(
-                en in data.get(u, {}).get("countered_by", []) for en in enemy_units
+                en
+                in data.get(u, {}).get(
+                    "countered_by", []
+                )  # unit u is countered by enemy en
+                or u
+                in data.get(en, {}).get(
+                    "used_against", []
+                )  # enemy en is strong against unit u
+                for en in enemy_units
             )
 
         # 🔒 Safe upgrades
