@@ -452,7 +452,7 @@ def run_app():
                 early_pen = -6 if is_titan else 0
             else:
                 # Linearly decrease early-round penalty from -3 at round 7 to 0 at round 10 and above
-                early_pen = -(10 - round_num) if round_num < 10 else 0
+                early_pen = -(10 - round_num)  # if round_num < 10 else 0
 
             # cost scaling
             cost_pen = 0  # Default initialization
