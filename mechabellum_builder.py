@@ -495,7 +495,10 @@ def run_app():
 
         def explain(u: str) -> list[str]:
             meta = units_meta.get(u, {})
-            lines = [("Upgrading" if u in my_units else "Adding") + f" **{u}**"]
+            if round_num == 1 and u in chaf_units:
+                lines = [("Add more" if u in my_units else "Adding") + f" **{u}**"]
+            else:
+                lines = [("Upgrading" if u in my_units else "Adding") + f" **{u}**"]
             lines.append(f"• Composite score: `{score_unit(u):.2f}`")
             lines.append(
                 f"• Cost: {meta.get('cost',300)} (+{meta.get('unlock_cost',0)} unlock)"
