@@ -402,7 +402,11 @@ def run_app():
             early_pen = -5 if round_num <= 3 and (is_giant or is_titan) else 0
 
             # cost scaling
-            cost_pen = -(cost + unlock) / (400 if round_num <= 3 else 600)
+            if round_num <= 3:
+                cost_pen = -(cost + unlock) / 400
+            else:
+                # Better linear scaling for rounds after 3:
+                cost_pen = -(cost + unlock) / (600 + 100 * (round_num - 3))
 
             # enemy counters
             enemy_cnt = sum(
@@ -412,7 +416,7 @@ def run_app():
 
             return (
                 coverage_score
-                + t_val * 0.8
+                + t_val * 0.7
                 + in_build
                 + titan_pen
                 + giant_pen
