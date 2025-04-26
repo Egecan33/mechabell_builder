@@ -474,6 +474,10 @@ def run_app():
     import pandas as pd
     import altair as alt
 
+    # Ensure sorted_candidates is defined
+    candidates = set(all_units)
+    sorted_candidates = sorted(candidates, key=score_unit, reverse=True)
+
     # Create the detailed table first
     details = []
     for u in sorted_candidates[:10]:
