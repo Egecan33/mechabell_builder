@@ -263,6 +263,8 @@ def run_app():
     with col2:
         enemy_units = st.multiselect("Enemy units", all_units)
 
+    st.divider()
+
     # ---------- Counters & Vulnerabilities (side-by-side) ----------
     if enemy_units or my_units:
         lcol, rcol = st.columns(2)
@@ -490,7 +492,6 @@ def run_app():
         for line in explain(best):
             st.markdown(line, unsafe_allow_html=True)
 
-        st.divider()
         # Second-best suggestion
         if second:
             st.divider()
@@ -501,10 +502,16 @@ def run_app():
             for line in explain(second):
                 st.markdown(line, unsafe_allow_html=True)
 
+        st.divider()
         st.info(
-            f"📌 You can always add more chaff: **{max(chaf_units, key=score_unit)}**"
+            f"📌 You can always add more chaff: **{max(chaf_units, key=score_unit)}**. "
         )
-
+        if round_num < 4:
+            st.info(
+                f"Don't buy tech before round 4. "
+                f"If no drop happened and it is round 3, take an item in choice and wait one turn, then pick a unit in drop to put on it."
+            )
+        st.divider()
         # ---- Altair chart ----
         chart_df = pd.DataFrame(
             {"unit": ranked[:10], "score": [score_unit(u) for u in ranked[:10]]}
