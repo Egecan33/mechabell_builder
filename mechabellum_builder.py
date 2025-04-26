@@ -442,12 +442,13 @@ def run_app():
                 msg += (
                     f" ⚖️ Skill match-ups with {mutual_html} – keep distance, use cover."
                 )
-                if enemy_targets:
-                    targets_html = ", ".join(
-                        f"<span style='color:#3498db; text-shadow: 0 0 5px #3498db'>{with_icon(en)}</span>"
-                        for en in enemy_targets
-                    )
-                    msg += f" ✅ Strong into {targets_html} – try to force that lane!"
+
+            if enemy_targets:
+                targets_html = ", ".join(
+                    f"<span style='color:#3498db; text-shadow: 0 0 5px #3498db'>{with_icon(en)}</span>"
+                    for en in enemy_targets
+                )
+                msg += f" ✅ Strong into {targets_html} – try to force that lane!"
 
             if not (enemy_threats or mutual or enemy_targets):
                 msg += "✨ No direct interactions detected – deploy flexibly."
