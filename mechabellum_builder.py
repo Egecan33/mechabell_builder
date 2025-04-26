@@ -304,23 +304,27 @@ def run_app():
                 en in data.get(u, {}).get("countered_by", []) for en in enemy_units
             )
 
+        # 🔒 Safe upgrades
         with colA:
             st.header("🔒 Safe upgrades")
             safe = [u for u in my_units if not enemy_has_counter(u)]
-            st.write(
-                "\n".join(f"- **{u}** {badge(u)}" for u in safe)
-                or "Enemy can answer every fielded unit."
-            )
+            if safe:
+                for u in safe:
+                    st.markdown(f"- **{u}** {badge(u)}", unsafe_allow_html=True)
+            else:
+                st.write("Enemy can answer every fielded unit.")
 
+        # 🚀 Free punish picks
         with colB:
             st.header("🚀 Free punish picks")
             free = [
                 u for u in all_units if u not in my_units and not enemy_has_counter(u)
             ]
-            st.write(
-                "\n".join(f"- **{u}** {badge(u)}" for u in free)
-                or "Enemy has coverage for all unused units."
-            )
+            if free:
+                for u in free:
+                    st.markdown(f"- **{u}** {badge(u)}", unsafe_allow_html=True)
+    else:
+        st.write("Enemy has coverage for all unused units.")
 
         with colC:
             st.header("🚫 Avoid for now")
@@ -336,9 +340,9 @@ def run_app():
             avoid.sort(key=lambda x: (-x[1], x[0]))
             if avoid:
                 for u, n in avoid:
-                    lbl = "hard" if n >= 2 else "soft"
+                    label = "hard" if n >= 2 else "soft"
                     st.markdown(
-                        f"- **{u}** {badge(u)} ({lbl} – {n} enemy counter{'s'*(n>1)})",
+                        f"- **{u}** {badge(u)} ({label} – {n} enemy counter{'s' if n>1 else ''})",
                         unsafe_allow_html=True,
                     )
             else:
