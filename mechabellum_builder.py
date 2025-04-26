@@ -216,15 +216,27 @@ def find_vuln(mine: List[str], data: Dict[str, Dict], tiers: Dict[str, str]):
 
 def run_app():
     import streamlit as st
+    import pandas as pd
+    import altair as alt
 
+    # ---------- Load main + meta ----------
     if not DATA_FILE.exists():
         st.error("Run `python mechabellum_builder.py scrape` first.")
         return
     data = json.loads(DATA_FILE.read_text())
     tiers = load_tiers()
 
+    # extra meta files
+    units2 = json.loads((DATA_DIR / "units2.json").read_text())["units2"]
+    units_meta = {u["name"]: u for u in units2}
+    chaf_units = json.loads((DATA_DIR / "chaf.json").read_text())["chaf"]
+
+    # ---------- UI header ----------
     st.set_page_config("Mechabellum Build Assistant", "🤖", layout="wide")
     st.title("🤖 Mechabellum Build Assistant")
+
+    # Current round selector
+    round_num = st.number_input("Current round", 1, 10, 1, step=1)
 
     color_map = {
         "S": "#e74c3c",
@@ -237,11 +249,13 @@ def run_app():
     def badge(u: str) -> str:
         t = tiers.get(u)
         return (
-            f"<span style='background:{color_map[t]};padding:2px 6px;border-radius:4px;color:#fff;font-size:0.75em'>{t}</span>"
+            f"<span style='background:{color_map[t]};padding:2px 6px;"
+            f"border-radius:4px;color:#fff;font-size:0.7em'>{t}</span>"
             if t
             else ""
         )
 
+    # ---------- Pickers ----------
     all_units = sorted(data.keys())
     col1, col2 = st.columns(2)
     with col1:
@@ -249,27 +263,26 @@ def run_app():
     with col2:
         enemy_units = st.multiselect("Enemy units", all_units)
 
+    # ---------- Counters & Vulnerabilities (side-by-side) ----------
     if enemy_units or my_units:
-        left_col, right_col = st.columns(2)
+        lcol, rcol = st.columns(2)
 
         if enemy_units:
-            with left_col:
+            with lcol:
                 st.subheader("Suggested counters (tier-weighted)")
-                ranked = rank_counters(enemy_units, data, tiers)
-                for unit, count in ranked:
-                    covered = [
+                for u, n in rank_counters(enemy_units, data, tiers):
+                    cov = [
                         e
                         for e in enemy_units
-                        if unit in data.get(e, {}).get("countered_by", [])
+                        if u in data.get(e, {}).get("countered_by", [])
                     ]
-                    cover_txt = ", ".join(covered)
                     st.markdown(
-                        f"- **{unit}** {badge(unit)} — counters **{count}**: _{cover_txt}_",
+                        f"- **{u}** {badge(u)} — counters **{n}**: _{', '.join(cov)}_",
                         unsafe_allow_html=True,
                     )
 
         if my_units:
-            with right_col:
+            with rcol:
                 st.subheader("Vulnerabilities in my build")
                 vul = find_vuln(my_units, data, tiers)
                 if vul:
@@ -281,7 +294,7 @@ def run_app():
                 else:
                     st.success("No listed hard counters – nice!")
 
-    # Focus panels
+    # ---------- Focus panels ----------
     if my_units and enemy_units:
         st.divider()
         colA, colB, colC = st.columns(3)
@@ -291,266 +304,219 @@ def run_app():
                 en in data.get(u, {}).get("countered_by", []) for en in enemy_units
             )
 
-        # 🔒 Safe upgrades (in build, not countered)
         with colA:
             st.header("🔒 Safe upgrades")
             safe = [u for u in my_units if not enemy_has_counter(u)]
-            if safe:
-                for u in safe:
-                    st.markdown(f"- **{u}** {badge(u)}", unsafe_allow_html=True)
-            else:
-                st.write("Enemy can answer every fielded unit.")
+            st.write(
+                "\n".join(f"- **{u}** {badge(u)}" for u in safe)
+                or "Enemy can answer every fielded unit."
+            )
 
-        # 🚀 Free punish picks (not in build & not countered)
         with colB:
             st.header("🚀 Free punish picks")
             free = [
                 u for u in all_units if u not in my_units and not enemy_has_counter(u)
             ]
-            if free:
-                for u in free:
-                    st.markdown(f"- **{u}** {badge(u)}", unsafe_allow_html=True)
-            else:
-                st.write("Enemy has coverage for all unused units.")
+            st.write(
+                "\n".join(f"- **{u}** {badge(u)}" for u in free)
+                or "Enemy has coverage for all unused units."
+            )
 
-        # 🚫 Avoid for now (opponent can counter immediately)
         with colC:
             st.header("🚫 Avoid for now")
-
             avoid = []
-            for candidate in all_units:
-                # enemy units that can counter this candidate
-                counters = [
-                    en
+            for cand in all_units:
+                cnt = sum(
+                    1
                     for en in enemy_units
-                    if candidate in data.get(en, {}).get("used_against", [])
-                ]
-                if counters:
-                    avoid.append((candidate, len(counters)))
-
+                    if cand in data.get(en, {}).get("used_against", [])
+                )
+                if cnt:
+                    avoid.append((cand, cnt))
             avoid.sort(key=lambda x: (-x[1], x[0]))
-
             if avoid:
                 for u, n in avoid:
-                    label = "hard" if n >= 2 else "soft"
+                    lbl = "hard" if n >= 2 else "soft"
                     st.markdown(
-                        f"- **{u}** {badge(u)} ({label} – {n} counters by current enemy build)",
+                        f"- **{u}** {badge(u)} ({lbl} – {n} enemy counter{'s'*(n>1)})",
                         unsafe_allow_html=True,
                     )
             else:
                 st.write("Enemy build does not strongly counter anything directly.")
 
-    # --------------------- Next focus suggestion ---------------------
+    # ---------- Next focus suggestion ----------
     if my_units and enemy_units:
         st.divider()
         st.header("🔮 Next focus suggestion")
 
+        # ---- scoring ----
         def score_unit(u: str) -> float:
-            already_covered = set()
-            for myu in my_units:
-                already_covered.update(
-                    e
-                    for e in enemy_units
-                    if myu in data.get(e, {}).get("countered_by", [])
-                )
+            meta = units_meta.get(u, {})
+            is_titan = meta.get("titan", False)
+            is_giant = meta.get("giant", False)
+            cost = meta.get("cost", 300)
+            unlock = meta.get("unlock_cost", 0)
 
-            # What this new unit would newly cover
-            newly_covers = [
-                e
-                for e in enemy_units
-                if u in data.get(e, {}).get("countered_by", [])
-                and e not in already_covered
-            ]
-            overlaps = [
-                e
-                for e in enemy_units
-                if u in data.get(e, {}).get("countered_by", []) and e in already_covered
-            ]
-
-            unique_coverage = len(set(newly_covers))
-            overlap_coverage = len(set(overlaps))
-
-            t_val = TIER_RANK.get(tiers.get(u, ""), 0)
-            in_build = 1 if u in my_units else 0
-
-            # You want:
-            # - Big reward for unique new coverages
-            # - Small penalty for overlap coverage (maybe 0.5 per)
-            # - Strong scaling for multi-unique coverages
-            coverage_score = unique_coverage * 2.3 - overlap_coverage * 0.3
-
-            # Penalty if enemy already counters this unit
-            enemy_counters = sum(
-                1 for en in enemy_units if en in data.get(u, {}).get("countered_by", [])
-            )
-            penalty = -2 - (enemy_counters - 1) if enemy_counters > 0 else 0
-
-            return (
-                max(0, coverage_score)
-                + t_val * 0.6
-                + in_build * 0.7
-                + min(0, penalty * 3.5)
-            )
-
-        candidates = set(all_units)
-        sorted_candidates = sorted(candidates, key=score_unit, reverse=True)
-
-        best = sorted_candidates[0]
-        second_best = sorted_candidates[1] if len(sorted_candidates) > 1 else None
-
-        def explain_choice(unit: str) -> List[str]:
-            """Return detailed markdown explanation for a suggested *unit*."""
-            # Enemy units already covered by your current build
+            # coverage
             already = {
                 e
-                for myu in my_units
+                for m in my_units
                 for e in enemy_units
-                if myu in data.get(e, {}).get("countered_by", [])
+                if m in data.get(e, {}).get("countered_by", [])
             }
-
-            unique_cov = [
-                e
-                for e in enemy_units
-                if unit in data.get(e, {}).get("countered_by", []) and e not in already
-            ]
-            overlap_cov = [
-                e
-                for e in enemy_units
-                if unit in data.get(e, {}).get("countered_by", []) and e in already
-            ]
-
-            tier_tag = tiers.get(unit, "—")
-            enemy_counters = [
-                en
-                for en in enemy_units
-                if en in data.get(unit, {}).get("countered_by", [])
-            ]
-            score_val = score_unit(unit)
-
-            lines: List[str] = []
-            # Intro sentence
-            lines.append(
-                f"Upgrading **{unit}** (already in build)"
-                if unit in my_units
-                else f"Adding **{unit}** to your build"
-            )
-            # Score
-            lines.append(f"• Composite score: `{score_val:.2f}`")
-            # Coverage details
-            if unique_cov:
-                lines.append(
-                    f"• **New unique coverage**: {len(unique_cov)} → {', '.join(unique_cov)}"
-                )
-            if overlap_cov:
-                lines.append(
-                    f"• **Overlap coverage**: {len(overlap_cov)} → {', '.join(overlap_cov)}"
-                )
-            # Tier
-            lines.append(f"• Tier rank: **{tier_tag}**")
-            # Enemy counters
-            if enemy_counters:
-                lines.append(
-                    f"• ⚠️ Enemy already has {len(enemy_counters)} counter(s): {', '.join(enemy_counters)}"
-                )
-            else:
-                lines.append("• Enemy currently lacks a direct counter.")
-            # Diversity note
-            if unit not in my_units and len(my_units) >= 6:
-                lines.append("• Keeps army size compact – avoids over-diversifying.")
-            return lines
-
-        # Best suggestion
-        st.subheader(f"🎯 Primary Focus: **{best}**")
-        for line in explain_choice(best):
-            st.markdown(line, unsafe_allow_html=True)
-
-        # Second-best suggestion
-        if second_best:
-            st.divider()
-            st.subheader(f"🎯 Secondary Focus: **{second_best}**")
-            for line in explain_choice(second_best):
-                st.markdown(line, unsafe_allow_html=True)
-
-    import pandas as pd
-    import altair as alt
-
-    try:
-        # Ensure sorted_candidates is defined
-        candidates = set(all_units)
-        sorted_candidates = sorted(candidates, key=score_unit, reverse=True)
-
-        # Create the detailed table first
-        details = []
-        for u in sorted_candidates[:10]:
-            already = {
-                e
-                for myu in my_units
-                for e in enemy_units
-                if myu in data.get(e, {}).get("countered_by", [])
-            }
-            unique_cov = [
+            new_cov = [
                 e
                 for e in enemy_units
                 if u in data.get(e, {}).get("countered_by", []) and e not in already
             ]
-            overlap_cov = [
+            overlap = [
                 e
                 for e in enemy_units
                 if u in data.get(e, {}).get("countered_by", []) and e in already
             ]
+            coverage_score = len(new_cov) * 2.5 - len(overlap) * 0.5
+
+            # tier / in-build
             t_val = TIER_RANK.get(tiers.get(u, ""), 0)
-            enemy_counter = sum(
+            in_build = 1 if u in my_units else 0
+
+            # titan / giant rules
+            titan_pen = (
+                -999
+                if is_titan and any(units_meta[m].get("titan") for m in my_units)
+                else 0
+            )
+            giants_in = sum(units_meta[m].get("giant", False) for m in my_units)
+            giant_pen = 0
+            if is_giant:
+                if giants_in == 1:
+                    giant_pen = -2
+                elif giants_in == 2:
+                    giant_pen = -5
+                elif giants_in >= 3:
+                    giant_pen = -10
+            early_pen = -5 if round_num <= 3 and (is_giant or is_titan) else 0
+
+            # cost scaling
+            cost_pen = -(cost + unlock) / (400 if round_num <= 3 else 600)
+
+            # enemy counters
+            enemy_cnt = sum(
                 1 for en in enemy_units if en in data.get(u, {}).get("countered_by", [])
             )
-            score = score_unit(u)
+            vuln_pen = -3 * enemy_cnt
 
-            details.append(
-                {
-                    "unit": u,
-                    "score": score,
-                    "unique_coverage": len(unique_cov),
-                    "overlap_coverage": len(overlap_cov),
-                    "tier_value": t_val,
-                    "enemy_counters": enemy_counter,
-                }
+            return (
+                coverage_score
+                + t_val * 0.8
+                + in_build
+                + titan_pen
+                + giant_pen
+                + early_pen
+                + cost_pen
+                + vuln_pen
             )
 
-        chart_df = pd.DataFrame(details)
+        # chaf advice round 1
+        if round_num == 1:
+            best_chaf = max(chaf_units, key=score_unit)
+            st.success(
+                f"🪳 Early-round tip: play **2× {best_chaf}** chaff "
+                f"(or 1× {best_chaf} and a light clear like Arclight)."
+            )
 
-        # Make a sexy Altair chart
+        # ranking
+        ranked = sorted(all_units, key=score_unit, reverse=True)
+        best, second = ranked[0], ranked[1]
+
+        def explain(u: str) -> list[str]:
+            meta = units_meta.get(u, {})
+            lines = [("Upgrading" if u in my_units else "Adding") + f" **{u}**"]
+            lines.append(f"• Composite score: `{score_unit(u):.2f}`")
+            lines.append(
+                f"• Cost: {meta.get('cost',300)} (+{meta.get('unlock_cost',0)} unlock)"
+            )
+            if meta.get("titan"):
+                lines.append("• 🚀 Titan-class (limit 1)")
+            if meta.get("giant"):
+                lines.append("• 🛡️ Giant")
+            # coverage
+            already = {
+                e
+                for m in my_units
+                for e in enemy_units
+                if m in data.get(e, {}).get("countered_by", [])
+            }
+            new_cov = [
+                e
+                for e in enemy_units
+                if u in data.get(e, {}).get("countered_by", []) and e not in already
+            ]
+            ov_cov = [
+                e
+                for e in enemy_units
+                if u in data.get(e, {}).get("countered_by", []) and e in already
+            ]
+            if new_cov:
+                lines.append(
+                    f"• New unique coverage: {len(new_cov)} → {', '.join(new_cov)}"
+                )
+            if ov_cov:
+                lines.append(f"• Overlap coverage: {len(ov_cov)} → {', '.join(ov_cov)}")
+            t_tag = tiers.get(u)
+            if t_tag:
+                lines.append(f"• Tier rank: **{t_tag}**")
+            enemy_cnt = [
+                en
+                for en in enemy_units
+                if en in data.get(u, {}).get("countered_by", [])
+            ]
+            if enemy_cnt:
+                lines.append(
+                    f"• ⚠️ {len(enemy_cnt)} enemy counter(s): {', '.join(enemy_cnt)}"
+                )
+            return lines
+
+        st.subheader(f"🎯 Primary: **{best}** {badge(best)}")
+        for ln in explain(best):
+            st.markdown(ln, unsafe_allow_html=True)
+
+        st.divider()
+        st.subheader(f"🎯 Secondary: **{second}** {badge(second)}")
+        for ln in explain(second):
+            st.markdown(ln, unsafe_allow_html=True)
+
+        st.info(
+            f"📌 You can always add more chaff: **{max(chaf_units, key=score_unit)}**"
+        )
+
+        # ---- Altair chart ----
+        chart_df = pd.DataFrame(
+            {"unit": ranked[:10], "score": [score_unit(u) for u in ranked[:10]]}
+        )
         st.altair_chart(
             alt.Chart(chart_df)
-            .mark_bar(size=30)
+            .mark_bar(size=28)
             .encode(
-                x=alt.X("score:Q", title="Composite Score", sort="-x"),
-                y=alt.Y("unit:N", sort="-x", title="Unit"),
-                tooltip=[
-                    alt.Tooltip("unit:N", title="Unit"),
-                    alt.Tooltip("score:Q", format=".2f"),
-                    alt.Tooltip("unique_coverage:Q", title="New Unique Covers"),
-                    alt.Tooltip("overlap_coverage:Q", title="Overlap Covers"),
-                    alt.Tooltip("tier_value:Q", title="Tier Rank (Higher Better)"),
-                    alt.Tooltip("enemy_counters:Q", title="Vulnerabilities"),
-                ],
+                x=alt.X("score:Q", sort="-x", title="Composite Score"),
+                y=alt.Y("unit:N", sort="-x"),
                 color=alt.Color(
                     "score:Q", scale=alt.Scale(scheme="blues"), legend=None
                 ),
+                tooltip=["unit:N", "score:Q"],
             )
-            .properties(height=400),
+            .properties(height=380),
             use_container_width=True,
         )
-    except Exception as e:
-        st.error(f"Not much info: {e}")
-        st.write("No unit selected yet in opponents build.")
 
-    # Detail expanders
+    # ---------- Detail expanders ----------
     st.divider()
-    for heading, units, text_key in (
+    for head, units, key in (
         ("Enemy guides", enemy_units, "how_to_counter"),
         ("My unit guides", my_units, "how_to_play"),
     ):
         if units:
-            st.header(heading)
+            st.header(head)
             for u in units:
                 info = data.get(u, {})
                 with st.expander(u):
@@ -566,7 +532,7 @@ def run_app():
                         + ", ".join(info.get("countered_by") or ["—"])
                     )
                     st.markdown(
-                        textwrap.fill(info.get(text_key, "No guide available."), 100)
+                        textwrap.fill(info.get(key, "No guide available."), 100)
                     )
 
     st.markdown(

@@ -1,0 +1,221 @@
+{
+  "units2": [
+    {
+      "name": "Abyss",
+      "giant": true,
+      "titan": true,
+      "cost": 800,
+      "unlock_cost": 200
+    },
+    {
+      "name": "Arclight",
+      "giant": false,
+      "titan": false,
+      "cost": 100,
+      "unlock_cost": 0
+    },
+    {
+      "name": "Crawler",
+      "giant": false,
+      "titan": false,
+      "cost": 100,
+      "unlock_cost": 0
+    },
+    {
+      "name": "Death Knell",
+      "giant": true,
+      "titan": true,
+      "cost": 800,
+      "unlock_cost": 200
+    },
+    {
+      "name": "Fang",
+      "giant": false,
+      "titan": false,
+      "cost": 100,
+      "unlock_cost": 0
+    },
+    {
+      "name": "Farseer",
+      "giant": false,
+      "titan": false,
+      "cost": 300,
+      "unlock_cost": 50
+    },
+    {
+      "name": "Fire Badger",
+      "giant": false,
+      "titan": false,
+      "cost": 200,
+      "unlock_cost": 0
+    },
+    {
+      "name": "Fortress",
+      "giant": true,
+      "titan": false,
+      "cost": 400,
+      "unlock_cost": 200
+    },
+    {
+      "name": "Hacker",
+      "giant": false,
+      "titan": false,
+      "cost": 200,
+      "unlock_cost": 100
+    },
+    {
+      "name": "Hound",
+      "giant": false,
+      "titan": false,
+      "cost": 100,
+      "unlock_cost": 0
+    },
+    {
+      "name": "Marksman",
+      "giant": false,
+      "titan": false,
+      "cost": 100,
+      "unlock_cost": 0
+    },
+    {
+      "name": "Melting Point",
+      "giant": true,
+      "titan": false,
+      "cost": 400,
+      "unlock_cost": 200
+    },
+    {
+      "name": "Mountain",
+      "giant": true,
+      "titan": true,
+      "cost": 800,
+      "unlock_cost": 200
+    },
+    {
+      "name": "Mustang",
+      "giant": false,
+      "titan": false,
+      "cost": 200,
+      "unlock_cost": 0
+    },
+    {
+      "name": "Overlord",
+      "giant": true,
+      "titan": false,
+      "cost": 500,
+      "unlock_cost": 200
+    },
+    {
+      "name": "Phantom Ray",
+      "giant": false,
+      "titan": false,
+      "cost": 200,
+      "unlock_cost": 50
+    },
+    {
+      "name": "Phoenix",
+      "giant": false,
+      "titan": false,
+      "cost": 200,
+      "unlock_cost": 50
+    },
+    {
+      "name": "Raiden",
+      "giant": true,
+      "titan": false,
+      "cost": 400,
+      "unlock_cost": 200
+    },
+    {
+      "name": "Rhino",
+      "giant": false,
+      "titan": false,
+      "cost": 200,
+      "unlock_cost": 50
+    },
+    {
+      "name": "Sabertooth",
+      "giant": false,
+      "titan": false,
+      "cost": 200,
+      "unlock_cost": 0
+    },
+    {
+      "name": "Sandworm",
+      "giant": true,
+      "titan": false,
+      "cost": 400,
+      "unlock_cost": 200
+    },
+    {
+      "name": "Scorpion",
+      "giant": false,
+      "titan": false,
+      "cost": 300,
+      "unlock_cost": 50
+    },
+    {
+      "name": "Sledgehammer",
+      "giant": false,
+      "titan": false,
+      "cost": 200,
+      "unlock_cost": 0
+    },
+    {
+      "name": "Steel Ball",
+      "giant": false,
+      "titan": false,
+      "cost": 200,
+      "unlock_cost": 0
+    },
+    {
+      "name": "Stormcaller",
+      "giant": false,
+      "titan": false,
+      "cost": 200,
+      "unlock_cost": 0
+    },
+    {
+      "name": "Tarantula",
+      "giant": false,
+      "titan": false,
+      "cost": 200,
+      "unlock_cost": 0
+    },
+    {
+      "name": "Typhoon",
+      "giant": false,
+      "titan": false,
+      "cost": 300,
+      "unlock_cost": 50
+    },
+    {
+      "name": "Vulcan",
+      "giant": true,
+      "titan": false,
+      "cost": 400,
+      "unlock_cost": 200
+    },
+    {
+      "name": "War Factory",
+      "giant": true,
+      "titan": true,
+      "cost": 800,
+      "unlock_cost": 200
+    },
+    {
+      "name": "Wasp",
+      "giant": false,
+      "titan": false,
+      "cost": 200,
+      "unlock_cost": 50
+    },
+    {
+      "name": "Wraith",
+      "giant": false,
+      "titan": false,
+      "cost": 300,
+      "unlock_cost": 50
+    }
+  ]
+}
