@@ -379,13 +379,13 @@ def run_app():
             # if name u is chaff unit and round==1 add to score
             if u in chaf_units and round_num == 1:
                 if enemy_has_counter(u):
-                    chaf_score = 8
-                chaf_score = 10
+                    chaf_score = 13
+                chaf_score = 18
             # if build doesn't have arclight and round==1 add to score
             if "Arclight" not in my_units and round_num == 1:
-                arc_score = 8
+                arc_score = 14
                 if any(chaf in enemy_units for chaf in chaf_units):
-                    arc_score = 11
+                    arc_score = 20
 
             # if chaf unit is in my build and round!=1 add to score
             if u in chaf_units and round_num != 1:
