@@ -474,68 +474,74 @@ def run_app():
     import pandas as pd
     import altair as alt
 
-    # Ensure sorted_candidates is defined
-    candidates = set(all_units)
-    sorted_candidates = sorted(candidates, key=score_unit, reverse=True)
+    try:
+        # Ensure sorted_candidates is defined
+        candidates = set(all_units)
+        sorted_candidates = sorted(candidates, key=score_unit, reverse=True)
 
-    # Create the detailed table first
-    details = []
-    for u in sorted_candidates[:10]:
-        already = {
-            e
-            for myu in my_units
-            for e in enemy_units
-            if myu in data.get(e, {}).get("countered_by", [])
-        }
-        unique_cov = [
-            e
-            for e in enemy_units
-            if u in data.get(e, {}).get("countered_by", []) and e not in already
-        ]
-        overlap_cov = [
-            e
-            for e in enemy_units
-            if u in data.get(e, {}).get("countered_by", []) and e in already
-        ]
-        t_val = TIER_RANK.get(tiers.get(u, ""), 0)
-        enemy_counter = sum(
-            1 for en in enemy_units if en in data.get(u, {}).get("countered_by", [])
-        )
-        score = score_unit(u)
-
-        details.append(
-            {
-                "unit": u,
-                "score": score,
-                "unique_coverage": len(unique_cov),
-                "overlap_coverage": len(overlap_cov),
-                "tier_value": t_val,
-                "enemy_counters": enemy_counter,
+        # Create the detailed table first
+        details = []
+        for u in sorted_candidates[:10]:
+            already = {
+                e
+                for myu in my_units
+                for e in enemy_units
+                if myu in data.get(e, {}).get("countered_by", [])
             }
-        )
+            unique_cov = [
+                e
+                for e in enemy_units
+                if u in data.get(e, {}).get("countered_by", []) and e not in already
+            ]
+            overlap_cov = [
+                e
+                for e in enemy_units
+                if u in data.get(e, {}).get("countered_by", []) and e in already
+            ]
+            t_val = TIER_RANK.get(tiers.get(u, ""), 0)
+            enemy_counter = sum(
+                1 for en in enemy_units if en in data.get(u, {}).get("countered_by", [])
+            )
+            score = score_unit(u)
 
-    chart_df = pd.DataFrame(details)
+            details.append(
+                {
+                    "unit": u,
+                    "score": score,
+                    "unique_coverage": len(unique_cov),
+                    "overlap_coverage": len(overlap_cov),
+                    "tier_value": t_val,
+                    "enemy_counters": enemy_counter,
+                }
+            )
 
-    # Make a sexy Altair chart
-    st.altair_chart(
-        alt.Chart(chart_df)
-        .mark_bar(size=30)
-        .encode(
-            x=alt.X("score:Q", title="Composite Score", sort="-x"),
-            y=alt.Y("unit:N", sort="-x", title="Unit"),
-            tooltip=[
-                alt.Tooltip("unit:N", title="Unit"),
-                alt.Tooltip("score:Q", format=".2f"),
-                alt.Tooltip("unique_coverage:Q", title="New Unique Covers"),
-                alt.Tooltip("overlap_coverage:Q", title="Overlap Covers"),
-                alt.Tooltip("tier_value:Q", title="Tier Rank (Higher Better)"),
-                alt.Tooltip("enemy_counters:Q", title="Vulnerabilities"),
-            ],
-            color=alt.Color("score:Q", scale=alt.Scale(scheme="blues"), legend=None),
+        chart_df = pd.DataFrame(details)
+
+        # Make a sexy Altair chart
+        st.altair_chart(
+            alt.Chart(chart_df)
+            .mark_bar(size=30)
+            .encode(
+                x=alt.X("score:Q", title="Composite Score", sort="-x"),
+                y=alt.Y("unit:N", sort="-x", title="Unit"),
+                tooltip=[
+                    alt.Tooltip("unit:N", title="Unit"),
+                    alt.Tooltip("score:Q", format=".2f"),
+                    alt.Tooltip("unique_coverage:Q", title="New Unique Covers"),
+                    alt.Tooltip("overlap_coverage:Q", title="Overlap Covers"),
+                    alt.Tooltip("tier_value:Q", title="Tier Rank (Higher Better)"),
+                    alt.Tooltip("enemy_counters:Q", title="Vulnerabilities"),
+                ],
+                color=alt.Color(
+                    "score:Q", scale=alt.Scale(scheme="blues"), legend=None
+                ),
+            )
+            .properties(height=400),
+            use_container_width=True,
         )
-        .properties(height=400),
-        use_container_width=True,
-    )
+    except Exception as e:
+        st.error(f"Not much info: {e}")
+        st.write("No unit selected yet in opponents build.")
 
     # Detail expanders
     st.divider()
