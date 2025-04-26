@@ -475,11 +475,16 @@ def run_app():
 
             # combine penalties
             vuln_pen = -8 * interaction_count
-            # if u counters struggle_units +5
-            if any(
-                u in data.get(s, {}).get("used_against", []) for s in struggle_units
-            ):
-                struggle_priority = 10
+
+            if struggle_units:
+                struggle_hits = [
+                    s
+                    for s in struggle_units
+                    if u in data.get(s, {}).get("countered_by", [])
+                ]
+                struggle_priority = (
+                    len(struggle_hits) * 10
+                )  # +10 per struggle unit covered
 
             return (
                 coverage_score
