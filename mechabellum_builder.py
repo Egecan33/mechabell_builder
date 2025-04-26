@@ -372,32 +372,41 @@ def run_app():
     )
 
     if my_units and enemy_units:
-        st.subheader("Vulnerability Analysis & Tactical Placement")
+        st.subheader("Dynamic Positioning & Tactical Engagement")
         for u in my_units:
-            enemy_counters = [
+            enemy_threats = [
                 en
                 for en in enemy_units
                 if u in data.get(en, {}).get("countered_by", [])
             ]
-            if enemy_counters:
-                st.markdown(
-                    f"- **{u}** {badge(u)} is countered by **{', '.join(enemy_counters)}**. "
-                    "Consider moving this unit to a more sheltered position or near allies that can provide cover. "
-                    "This repositioning can reduce the impact of enemy attacks and increase your overall defensive resilience.",
-                    unsafe_allow_html=True,
+            enemy_targets = [
+                en
+                for en in enemy_units
+                if en in data.get(u, {}).get("used_against", [])
+            ]
+            message = f"- **{u}** {badge(u)}: "
+            if enemy_threats:
+                message += (
+                    f"⚠️ Facing counters from **{', '.join(enemy_threats)}**. "
+                    "Reposition this unit to dodge incoming threats and gain cover."
                 )
             else:
-                st.markdown(
-                    f"- **{u}** {badge(u)} is not directly countered by any enemy unit. "
-                    "Keeping it in a central position can maximize its potential to engage and counteract enemy maneuvers.",
-                    unsafe_allow_html=True,
+                message += (
+                    "✨ No direct enemy counters detected. "
+                    "Keep it forward to maximize engagement."
                 )
+            if enemy_targets:
+                message += f" It effectively counters **{', '.join(enemy_targets)}**—match it up to press the attack!"
+            st.markdown(message, unsafe_allow_html=True)
         st.markdown(
-            "💡 Tip: Arrange your formation so that vulnerable units are tucked away behind sturdier allies, while those that effectively counter enemy units are placed to engage opponents head-on. Experiment with flanking tactics and varied alignments to outmaneuver your enemy."
+            "💡 Tip: Arrange your formation so vulnerable units tuck behind sturdier allies, "
+            "while units that counter enemy forces are oriented to face their targets head-on. "
+            "Mix up the alignment dynamically to outflank and outmaneuver your opponent.",
+            unsafe_allow_html=True,
         )
     else:
         st.write(
-            "🤔 Please select units for both your build and enemy's build to receive positioning suggestions."
+            "🤔 Please select units for both your build and the enemy's build to get tailored positioning suggestions."
         )
     st.divider()
 
