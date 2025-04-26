@@ -415,13 +415,13 @@ def run_app():
             else:
                 # Linearly decrease early-round penalty from -3 at round 7 to 0 at round 10 and above
                 early_pen = -(10 - round_num) if round_num < 10 else 0
-
-            # cost scaling
-            if round_num <= 3:
-                cost_pen = -(cost + unlock) / 400
-            else:
-                # Better linear scaling for rounds after 3:
-                cost_pen = -(cost + unlock) / (600 + 100 * (round_num - 3))
+                # cost scaling
+                if round_num <= 3:
+                    cost_pen = -(cost + unlock) / 400
+                elif round_num <= 6:
+                    cost_pen = (cost + unlock) / 450
+                else:
+                    cost_pen = (cost + unlock) / (600 - 50 * (round_num - 6))
 
             # enemy counters
             enemy_cnt = sum(
