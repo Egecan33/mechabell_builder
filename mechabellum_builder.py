@@ -777,6 +777,23 @@ def run_app():
                         textwrap.fill(info.get(key, "No guide available."), 100)
                     )
 
+    # ---------- Full Interaction Matrix ----------
+    st.divider()
+    st.header("🔳 Full Unit Interaction Matrix")
+
+    # Top row: enemy icons
+    if enemy_units:
+        cols = st.columns(len(enemy_units) + 1)
+        # blank top-left cell
+        cols[0].markdown("")
+        for i, en in enumerate(enemy_units, start=1):
+            cols[i].markdown(with_icon(en), unsafe_allow_html=True)
+
+    # Left column + image
+    # We cannot overlay a grid, so simply show the full matrix image
+    # below with your build on the left and enemy build on top.
+    st.image("data/Mechabellum_Unit_Matrix.jpg", use_column_width=True)
+
     # ---------- Chaff units ----------
     st.markdown(
         f"<sup>Source: <a href='{BASE}' target='_blank'>{BASE}</a></sup>",
