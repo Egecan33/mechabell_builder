@@ -777,61 +777,54 @@ def run_app():
                         textwrap.fill(info.get(key, "No guide available."), 100)
                     )
 
-    # ---------- Unit Matrix (at the very bottom) ----------
-    st.divider()
-    st.header("🔲 Full Unit Interaction Matrix")
+    # ────────── Full Unit Interaction Matrix ──────────
+    if my_units and enemy_units:
+        st.divider()
+        st.header("🔲 Full Unit Interaction Matrix")
 
-    # first, build two rows of icons: top = enemy_units, left = my_units
-    # we’ll use st.columns to get perfect alignment
-    n = max(len(enemy_units), 1)  # avoid zero-cols
-    icon_cols = st.columns(n + 1)  # +1 for the top‐left corner
-
-    # top‐left corner blank
-    icon_cols[0].write("")
-
-    # top row enemy icons
-    for i, eu in enumerate(enemy_units, start=1):
-        url = data[eu].get("image", "")
-        if url:
-            icon_cols[i].image(url, width=16)
-        else:
-            icon_cols[i].write(eu)
-
-    # now the body: we'll create two columns again—left icons + big matrix
-    body_cols = st.columns([1, 8])
-
-    # left column: your build icons
-    with body_cols[0]:
-        for mu in my_units:
-            url = data[mu].get("image", "")
-            if url:
-                st.image(url, width=16)
+        # — Top row: one blank cell + enemy icons —
+        top_cols = st.columns(len(enemy_units) + 1)
+        top_cols[0].write("")  # top-left corner
+        for idx, en in enumerate(enemy_units, start=1):
+            img = data.get(en, {}).get("image")
+            if img:
+                top_cols[idx].image(img, width=16)
             else:
-                st.write(mu)
+                top_cols[idx].write(en)
 
-    # right column: the actual full‐matrix screenshot, inside a styled div
-    with body_cols[1]:
-        st.markdown(
-            """
-            <div style="
-              padding:8px;
-              border:2px solid #555;
-              border-radius:8px;
-              background-color:#1e1e1e;
-            ">
-              <img
-                src='data/Mechabellum_Unit_Matrix.jpg'
-                style='display:block;
-                       margin-left:auto;
-                       margin-right:auto;
-                       max-width:100%;
-                       border-radius:4px;
-                       box-shadow:0 0 10px rgba(0,0,0,0.5);'
-              />
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        # — Body: left icons + the big matrix image —
+        left_col, mat_col = st.columns([1, 8])
+        with left_col:
+            for mu in my_units:
+                img = data.get(mu, {}).get("image")
+                if img:
+                    st.image(img, width=16)
+                else:
+                    st.write(mu)
+
+        with mat_col:
+            st.markdown(
+                """
+                <div style="
+                  padding:8px;
+                  border:2px solid #444;
+                  border-radius:6px;
+                  background-color:#1a1a1a;
+                ">
+                  <img
+                    src="data/Mechabellum_Unit_Matrix.jpg"
+                    style="
+                      display:block;
+                      margin:0 auto;
+                      max-width:100%;
+                      border-radius:4px;
+                      box-shadow:0 0 12px rgba(0,0,0,0.7);
+                    "
+                  />
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
     # ---------- Chaff units ----------
     st.markdown(
