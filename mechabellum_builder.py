@@ -782,41 +782,48 @@ def run_app():
         st.divider()
         st.header("🔲 Full Unit Interaction Matrix")
 
-        # 1) path to your matrix
+        # 1) check if matrix exists
         matrix_path = DATA_DIR / "Mechabellum_Unit_Matrix.jpg"
-
-        # only render if it exists
         if matrix_path.exists():
             st.divider()
             st.subheader("🔳 Full Unit Interaction Matrix")
 
-            # 2) top row of enemy icons
-            if enemy_units:
-                cols_top = st.columns(len(enemy_units), gap="small")
-                for i, en in enumerate(enemy_units):
-                    img_url = data[en].get("image", "")
-                    if img_url:
-                        cols_top[i].image(img_url, width=24)
+            # 2) build a grid: one tiny square top-left, then enemies across
+            cols = st.columns([1, 8], gap="small")
 
-            # 3) build a 2-col layout: left is your icons, right is the big image
-            col_left, col_img = st.columns([1, 8], gap="small")
+            with cols[0]:
+                # --- TOP LEFT CORNER: dead space ---
+                st.write("")  # just a blank spacer
 
-            # left: stack your build icons
-            with col_left:
+                # --- LEFT COLUMN: my units ---
                 for mu in my_units:
-                    img_url = data[mu].get("image", "")
+                    img_url = data.get(mu, {}).get("image", "")
                     if img_url:
-                        st.image(img_url, width=24)
+                        st.image(img_url, width=28)
+                    else:
+                        st.write("")  # if missing, keep spacing
 
-            # right: show the matrix with a border/shadow
-            with col_img:
+            with cols[1]:
+                # --- TOP ROW: enemy units ---
+                if enemy_units:
+                    top_cols = st.columns(len(enemy_units), gap="small")
+                    for i, en in enumerate(enemy_units):
+                        img_url = data.get(en, {}).get("image", "")
+                        if img_url:
+                            top_cols[i].image(img_url, width=28)
+                        else:
+                            top_cols[i].write("")
+
+                # --- MAIN MATRIX IMAGE ---
                 st.markdown(
                     """
                     <div style="
                     padding:4px;
+                    margin-top:8px;
                     border:2px solid #444;
                     border-radius:6px;
                     box-shadow:0 2px 8px rgba(0,0,0,0.6);
+                    background-color:#111;
                     ">
                     </div>
                     """,
