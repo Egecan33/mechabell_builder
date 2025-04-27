@@ -782,17 +782,6 @@ def run_app():
         st.divider()
         st.header("🔲 Full Unit Interaction Matrix")
 
-        import os
-
-        st.write("📁 data folder contents:", os.listdir(DATA_DIR))
-
-        # 2) build the path & display it if found
-        matrix_path = DATA_DIR / "Mechabellum_Unit_Matrix.jpg"
-        if matrix_path.exists():
-            st.image(str(matrix_path), use_column_width=True)
-        else:
-            st.error(f"⚠️ Couldn’t find matrix image at: {matrix_path}")
-
         # — Top row: one blank cell + enemy icons —
         top_cols = st.columns(len(enemy_units) + 1)
         top_cols[0].write("")  # top-left corner
@@ -814,24 +803,27 @@ def run_app():
                     st.write(mu)
 
         with mat_col:
+            matrix_url = f"data/Mechabellum_Unit_Matrix.jpg"
             st.markdown(
-                """
+                f"""
                 <div style="
-                  padding:8px;
-                  border:2px solid #444;
-                  border-radius:6px;
-                  background-color:#1a1a1a;
+                    padding:8px;
+                    border:2px solid #444;
+                    border-radius:6px;
+                    background-color:#1a1a1a;
+                    text-align:center;
                 ">
-                  <img
-                    src="data/Mechabellum_Unit_Matrix.jpg"
+                <img
+                    src="{matrix_url}"
                     style="
-                      display:block;
-                      margin:0 auto;
-                      max-width:100%;
-                      border-radius:4px;
-                      box-shadow:0 0 12px rgba(0,0,0,0.7);
+                    display:inline-block;
+                    margin:0 auto;
+                    max-width:100%;
+                    border-radius:4px;
+                    box-shadow:0 0 12px rgba(0,0,0,0.7);
                     "
-                  />
+                    alt="Unit Interaction Matrix"
+                />
                 </div>
                 """,
                 unsafe_allow_html=True,
