@@ -782,6 +782,17 @@ def run_app():
         st.divider()
         st.header("🔲 Full Unit Interaction Matrix")
 
+        import os
+
+        st.write("📁 data folder contents:", os.listdir(DATA_DIR))
+
+        # 2) build the path & display it if found
+        matrix_path = DATA_DIR / "Mechabellum_Unit_Matrix.jpg"
+        if matrix_path.exists():
+            st.image(str(matrix_path), use_column_width=True)
+        else:
+            st.error(f"⚠️ Couldn’t find matrix image at: {matrix_path}")
+
         # — Top row: one blank cell + enemy icons —
         top_cols = st.columns(len(enemy_units) + 1)
         top_cols[0].write("")  # top-left corner
