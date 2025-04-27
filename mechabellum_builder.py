@@ -777,47 +777,61 @@ def run_app():
                         textwrap.fill(info.get(key, "No guide available."), 100)
                     )
 
-    # ---------- Full Interaction Matrix with Build Icons ----------
+    # ---------- Unit Matrix (at the very bottom) ----------
     st.divider()
-    st.header("🔳 Full Unit Interaction Matrix")
+    st.header("🔲 Full Unit Interaction Matrix")
 
-    # Top row: enemy-build icons
-    if enemy_units:
-        cols = st.columns(len(enemy_units) + 1)
-        cols[0].write("")  # empty top-left corner
-        for i, en in enumerate(enemy_units, start=1):
-            cols[i].markdown(
-                with_icon(en),
-                unsafe_allow_html=True,
-            )
+    # first, build two rows of icons: top = enemy_units, left = my_units
+    # we’ll use st.columns to get perfect alignment
+    n = max(len(enemy_units), 1)  # avoid zero-cols
+    icon_cols = st.columns(n + 1)  # +1 for the top‐left corner
 
-    # Left-column: your-build icons + the big matrix
-    if my_units:
-        left, right = st.columns([1, 10])
-        # left: one icon per row
-        with left:
-            for u in my_units:
-                st.markdown(
-                    with_icon(u),
-                    unsafe_allow_html=True,
-                )
-        # right: the full-sized matrix
-        with right:
-            st.image(
-                "data/Mechabellum_Unit_Matrix.jpg",
-                use_column_width=True,
-            )
-    else:
-        # fallback if you have no units
-        st.image(
-            "data/Mechabellum_Unit_Matrix.jpg",
-            use_column_width=True,
+    # top‐left corner blank
+    icon_cols[0].write("")
+
+    # top row enemy icons
+    for i, eu in enumerate(enemy_units, start=1):
+        url = data[eu].get("image", "")
+        if url:
+            icon_cols[i].image(url, width=16)
+        else:
+            icon_cols[i].write(eu)
+
+    # now the body: we'll create two columns again—left icons + big matrix
+    body_cols = st.columns([1, 8])
+
+    # left column: your build icons
+    with body_cols[0]:
+        for mu in my_units:
+            url = data[mu].get("image", "")
+            if url:
+                st.image(url, width=16)
+            else:
+                st.write(mu)
+
+    # right column: the actual full‐matrix screenshot, inside a styled div
+    with body_cols[1]:
+        st.markdown(
+            """
+            <div style="
+              padding:8px;
+              border:2px solid #555;
+              border-radius:8px;
+              background-color:#1e1e1e;
+            ">
+              <img
+                src='data/Mechabellum_Unit_Matrix.jpg'
+                style='display:block;
+                       margin-left:auto;
+                       margin-right:auto;
+                       max-width:100%;
+                       border-radius:4px;
+                       box-shadow:0 0 10px rgba(0,0,0,0.5);'
+              />
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
-
-    # Left column + image
-    # We cannot overlay a grid, so simply show the full matrix image
-    # below with your build on the left and enemy build on top.
-    st.image("data/Mechabellum_Unit_Matrix.jpg", use_column_width=True)
 
     # ---------- Chaff units ----------
     st.markdown(
