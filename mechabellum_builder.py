@@ -807,12 +807,6 @@ def run_app():
             "data/Mechabellum_Unit_Matrix.jpg", use_column_width=True
         )  # adjust path as needed
 
-    # finally, your data source credit
-    st.markdown(
-        f"<sup>Source: <a href='{BASE}' target='_blank'>{BASE}</a></sup>",
-        unsafe_allow_html=True,
-    )
-    # ---------- Chaff units ----------
     st.markdown(
         f"<sup>Source: <a href='{BASE}' target='_blank'>{BASE}</a></sup>",
         unsafe_allow_html=True,
