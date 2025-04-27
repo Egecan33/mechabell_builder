@@ -782,52 +782,50 @@ def run_app():
         st.divider()
         st.header("🔲 Full Unit Interaction Matrix")
 
-        # — Top row: one blank cell + enemy icons —
-        top_cols = st.columns(len(enemy_units) + 1)
-        top_cols[0].write("")  # top-left corner
-        for idx, en in enumerate(enemy_units, start=1):
-            img = data.get(en, {}).get("image")
-            if img:
-                top_cols[idx].image(img, width=16)
-            else:
-                top_cols[idx].write(en)
+        # 1) path to your matrix
+        matrix_path = DATA_DIR / "Mechabellum_Unit_Matrix.jpg"
 
-        # — Body: left icons + the big matrix image —
-        left_col, mat_col = st.columns([1, 8])
-        with left_col:
-            for mu in my_units:
-                img = data.get(mu, {}).get("image")
-                if img:
-                    st.image(img, width=16)
-                else:
-                    st.write(mu)
+        # only render if it exists
+        if matrix_path.exists():
+            st.divider()
+            st.subheader("🔳 Full Unit Interaction Matrix")
 
-        with mat_col:
-            matrix_url = f"data/Mechabellum_Unit_Matrix.jpg"
-            st.markdown(
-                f"""
-                <div style="
-                    padding:8px;
+            # 2) top row of enemy icons
+            if enemy_units:
+                cols_top = st.columns(len(enemy_units), gap="small")
+                for i, en in enumerate(enemy_units):
+                    img_url = data[en].get("image", "")
+                    if img_url:
+                        cols_top[i].image(img_url, width=24)
+
+            # 3) build a 2-col layout: left is your icons, right is the big image
+            col_left, col_img = st.columns([1, 8], gap="small")
+
+            # left: stack your build icons
+            with col_left:
+                for mu in my_units:
+                    img_url = data[mu].get("image", "")
+                    if img_url:
+                        st.image(img_url, width=24)
+
+            # right: show the matrix with a border/shadow
+            with col_img:
+                st.markdown(
+                    """
+                    <div style="
+                    padding:4px;
                     border:2px solid #444;
                     border-radius:6px;
-                    background-color:#1a1a1a;
-                    text-align:center;
-                ">
-                <img
-                    src="{matrix_url}"
-                    style="
-                    display:inline-block;
-                    margin:0 auto;
-                    max-width:100%;
-                    border-radius:4px;
-                    box-shadow:0 0 12px rgba(0,0,0,0.7);
-                    "
-                    alt="Unit Interaction Matrix"
-                />
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+                    box-shadow:0 2px 8px rgba(0,0,0,0.6);
+                    ">
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.image(str(matrix_path), use_column_width=True)
+
+        else:
+            st.error(f"⚠️ Couldn’t find matrix image at: {matrix_path}")
 
     # ---------- Chaff units ----------
     st.markdown(
