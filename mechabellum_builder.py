@@ -777,17 +777,42 @@ def run_app():
                         textwrap.fill(info.get(key, "No guide available."), 100)
                     )
 
-    # ---------- Full Interaction Matrix ----------
+    # ---------- Full Interaction Matrix with Build Icons ----------
     st.divider()
     st.header("🔳 Full Unit Interaction Matrix")
 
-    # Top row: enemy icons
+    # Top row: enemy-build icons
     if enemy_units:
         cols = st.columns(len(enemy_units) + 1)
-        # blank top-left cell
-        cols[0].markdown("")
+        cols[0].write("")  # empty top-left corner
         for i, en in enumerate(enemy_units, start=1):
-            cols[i].markdown(with_icon(en), unsafe_allow_html=True)
+            cols[i].markdown(
+                with_icon(en),
+                unsafe_allow_html=True,
+            )
+
+    # Left-column: your-build icons + the big matrix
+    if my_units:
+        left, right = st.columns([1, 10])
+        # left: one icon per row
+        with left:
+            for u in my_units:
+                st.markdown(
+                    with_icon(u),
+                    unsafe_allow_html=True,
+                )
+        # right: the full-sized matrix
+        with right:
+            st.image(
+                "data/Mechabellum_Unit_Matrix.jpg",
+                use_column_width=True,
+            )
+    else:
+        # fallback if you have no units
+        st.image(
+            "data/Mechabellum_Unit_Matrix.jpg",
+            use_column_width=True,
+        )
 
     # Left column + image
     # We cannot overlay a grid, so simply show the full matrix image
